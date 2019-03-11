@@ -2,12 +2,12 @@
 baseurl: ""
 url: "https://singh-saurabh.github.io"
 title: A brighter match # site's title
-description: "A website with blog posts and pages" # used by search engines
+description: "Life. As it happens" # used by search engines
 
 # THEME-SPECIFIC CONFIGURATION
 theme_settings:
   # Meta
-  title: Blue Lights # blog's title
+  title: Saurabh Singh # blog's title
   avatar: assets/img/triangle.svg
   favicon: assets/favicon.ico
   gravatar: # Email MD5 hash

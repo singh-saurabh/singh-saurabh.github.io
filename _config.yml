@@ -1,49 +1,47 @@
 # SITE CONFIGURATION
-baseurl: "/Type-on-Strap"
-url: "https://sylhare.github.io"
-title: Type on Strap # site's title
+baseurl: ""
+url: "https://singh-saurabh.github.io"
+title: A brighter match # site's title
 description: "A website with blog posts and pages" # used by search engines
-
 
 # THEME-SPECIFIC CONFIGURATION
 theme_settings:
   # Meta
-  title: Type on Strap # blog's title
+  title: Blue Lights # blog's title
   avatar: assets/img/triangle.svg
   favicon: assets/favicon.ico
   gravatar: # Email MD5 hash
 
   # Header and footer text
-  header_text: Change header text in <code>_config.yml</code>
+  header_text: <p> A thought for the curious </p>
   header_feature_image: assets/img/pexels/triangular.jpeg
   footer_text: >
-    Powered by <a href="https://jekyllrb.com/">Jekyll</a> with <a href="https://github.com/sylhare/Type-on-Strap">Type on Strap</a>
-
+    Nice to have met you
   # Icons
-  rss: true  # Make sure you created a feed.xml with feed.xml layout
-  email_address: # Full email address, e.g. "sam@example.com"
+  rss: true # Make sure you created a feed.xml with feed.xml layout
+  email_address: "ssingh@cs.iitr.ac.in" # Full email address, e.g. "sam@example.com"
   behance:
   bitbucket:
   dribbble:
   facebook:
   flickr:
   gitlab:
-  github: "sylhare"
+  github: "singh-saurabh"
   google_plus:
-  instagram:
+  instagram: "the_master_shifu"
   keybase:
-  linkedin:  # Full URL
+  linkedin: "https://www.linkedin.in/in/saur"# Full URL
   pinterest:
   reddit:
   soundcloud:
-  stack_exchange:  # Full URL
+  stack_exchange: # Full URL
   steam:
   tumblr:
   twitter: # "twitter username"
   vimeo:
   wordpress:
   youtube:
-  
+
   # Sharing options
   share_buttons:
     facebook: true
@@ -57,19 +55,19 @@ theme_settings:
     wordpress:
     email: true
 
-  # Scripts / Features 
+  # Scripts / Features
   google_analytics: # Tracking ID, e.g. "UA-000000-01"
   disqus_shortname:
   katex: true # Enable if using math markup
-  
+
   special_page:
-    search: 
+    search:
       icon: "search"
       enabled: true
     tags:
       icon: "tags"
       enabled: true
-  
+
   # Localization strings
   str_follow_on: "Follow on"
   str_rss_follow: "Follow RSS feed"
@@ -90,19 +88,16 @@ theme_settings:
 
   # Post navigation
   post_navigation: true
-  
-  
+
 # PAGINATION
 paginate: 5
 paginate_path: "blog/page:num"
-
 
 # PORTFOLIO
 collections:
   portfolio:
     output: true
     permalink: /:collection/:name
-
 
 # BUILD SETTINGS
 markdown: kramdown
@@ -112,4 +107,17 @@ sass:
   style: :compressed
 plugins: [jekyll-paginate, jekyll-seo-tag]
 #theme: type-on-strap # Uncomment if using the theme as a jekyll theme gem
-exclude: ["Gemfile", "Gemfile.lock", "type-on-strap.gemspec", "*.gem", "LICENSE", "README.md", "screenshot.png", "package.json", "node_modules", "gulpfile.js", ".idea/*"]
+exclude:
+  [
+    "Gemfile",
+    "Gemfile.lock",
+    "type-on-strap.gemspec",
+    "*.gem",
+    "LICENSE",
+    "README.md",
+    "screenshot.png",
+    "package.json",
+    "node_modules",
+    "gulpfile.js",
+    ".idea/*",
+  ]

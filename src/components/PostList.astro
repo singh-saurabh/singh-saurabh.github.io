@@ -1,0 +1,84 @@
+---
+import type { CollectionEntry } from 'astro:content';
+
+interface Props {
+  posts: CollectionEntry<'blog'>[];
+}
+
+const { posts } = Astro.props;
+---
+
+<div class="post-list" data-post-list>
+  {posts.map((post) => (
+    <a
+      class="post-item"
+      href={`/blog/${post.id}/`}
+      data-tags={post.data.tags.join(',')}
+    >
+      <div class="post-title">{post.data.title}</div>
+      <div class="post-meta">
+        <span class="post-date">
+          {post.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}
+        </span>
+        <div class="post-tags">
+          {post.data.tags.map((tag: string) => (
+            <span class="post-tag">{tag}</span>
+          ))}
+        </div>
+      </div>
+    </a>
+  ))}
+</div>
+
+<style>
+  .post-list {
+    display: flex;
+    flex-direction: column;
+  }
+  .post-item {
+    display: block;
+    padding: 24px 0;
+    border-top: 1px solid var(--border);
+    text-decoration: none;
+    color: inherit;
+  }
+  .post-item:last-child {
+    border-bottom: 1px solid var(--border);
+  }
+  .post-title {
+    font-size: 17px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.45;
+    margin-bottom: 8px;
+    transition: color 0.15s;
+  }
+  .post-item:hover .post-title {
+    color: var(--accent);
+  }
+  .post-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .post-date {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-variant-numeric: tabular-nums;
+  }
+  .post-tags {
+    display: flex;
+    gap: 6px;
+  }
+  .post-tag {
+    font-size: 11px;
+    font-weight: 500;
+    padding: 2px 8px;
+    border-radius: 4px;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    text-transform: lowercase;
+    letter-spacing: 0.01em;
+  }
+</style>

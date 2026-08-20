@@ -1,0 +1,31 @@
+---
+interface Props {
+  title: string;
+  description?: string;
+  ogType?: string;
+  canonicalUrl?: string;
+}
+
+const {
+  title,
+  description = 'Saurabh Singh — Founding engineer at TensorFuse, writing about infrastructure, AI platforms, and trading systems.',
+  ogType = 'website',
+  canonicalUrl,
+} = Astro.props;
+
+const siteTitle = title === 'Saurabh Singh' ? title : `${title} | Saurabh Singh`;
+const canonical = canonicalUrl || Astro.url.href;
+---
+
+<title>{siteTitle}</title>
+<meta name="description" content={description} />
+<link rel="canonical" href={canonical} />
+
+<meta property="og:title" content={siteTitle} />
+<meta property="og:description" content={description} />
+<meta property="og:type" content={ogType} />
+<meta property="og:url" content={canonical} />
+
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content={siteTitle} />
+<meta name="twitter:description" content={description} />

@@ -1,0 +1,30 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import PostList from '../components/PostList.astro';
+import TagFilter from '../components/TagFilter.astro';
+import { getCollection } from 'astro:content';
+
+const posts = (await getCollection('blog', ({ data }) => !data.draft))
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const allTags = [...new Set(posts.flatMap((post) => post.data.tags))].sort();
+---
+
+<BaseLayout title="Saurabh Singh">
+  <div style="max-width:640px;margin:0 auto;padding:0 24px;">
+    <div style="padding:56px 0 48px;">
+      <h1 style="font-size:36px;font-weight:700;letter-spacing:-0.03em;line-height:1.15;margin-bottom:14px;">
+        Saurabh Singh
+      </h1>
+      <p style="font-family:var(--font-serif);font-size:18px;line-height:1.65;color:var(--text-secondary);max-width:520px;">
+        Founding engineer at <a href="https://tensorfuse.ai" style="color:var(--accent);text-decoration:underline;text-decoration-color:rgba(37,99,235,0.3);text-underline-offset:3px;">TensorFuse</a>, building AI platforms and developer tools. Previously infrastructure at Quantbox Trading. IIT Roorkee CS '21.
+      </p>
+    </div>
+
+    <div style="height:1px;background:var(--border);"></div>
+
+    <TagFilter tags={allTags} />
+
+    <PostList posts={posts} />
+  </div>
+</BaseLayout>

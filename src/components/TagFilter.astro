@@ -1,0 +1,80 @@
+---
+interface Props {
+  tags: string[];
+}
+
+const { tags } = Astro.props;
+---
+
+<div class="tags-filter" data-tag-filter>
+  <button class="tag-pill active" data-tag="all" type="button">all</button>
+  {tags.map((tag) => (
+    <button class="tag-pill" data-tag={tag} type="button">{tag}</button>
+  ))}
+</div>
+
+<script>
+  function initTagFilter() {
+    const filterContainer = document.querySelector('[data-tag-filter]');
+    const postList = document.querySelector('[data-post-list]');
+    if (!filterContainer || !postList) return;
+
+    const pills = filterContainer.querySelectorAll('.tag-pill');
+    const posts = postList.querySelectorAll('.post-item');
+
+    pills.forEach((pill) => {
+      pill.addEventListener('click', () => {
+        const tag = (pill as HTMLElement).dataset.tag;
+
+        pills.forEach((p) => p.classList.remove('active'));
+        pill.classList.add('active');
+
+        posts.forEach((post) => {
+          const postTags = (post as HTMLElement).dataset.tags?.split(',') || [];
+          if (tag === 'all' || postTags.includes(tag!)) {
+            (post as HTMLElement).style.display = '';
+          } else {
+            (post as HTMLElement).style.display = 'none';
+          }
+        });
+      });
+    });
+  }
+
+  initTagFilter();
+  document.addEventListener('astro:after-swap', initTagFilter);
+</script>
+
+<style>
+  .tags-filter {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 32px 0;
+  }
+  .tag-pill {
+    font-family: var(--font-sans);
+    font-size: 13px;
+    font-weight: 500;
+    padding: 6px 14px;
+    border-radius: 100px;
+    background: var(--tag-bg);
+    color: var(--tag-text);
+    cursor: pointer;
+    transition: all 0.15s;
+    border: none;
+    user-select: none;
+  }
+  .tag-pill:hover {
+    background: var(--border);
+    color: var(--text);
+  }
+  .tag-pill.active {
+    background: var(--tag-active-bg);
+    color: var(--tag-active-text);
+  }
+  .tag-pill.active:hover {
+    background: var(--tag-active-bg);
+    color: var(--tag-active-text);
+  }
+</style>

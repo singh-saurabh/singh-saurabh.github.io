@@ -1,0 +1,56 @@
+---
+import BaseLayout from './BaseLayout.astro';
+
+interface Props {
+  title: string;
+  date: Date;
+  tags: string[];
+  description: string;
+}
+
+const { title, date, tags, description } = Astro.props;
+
+const formattedDate = date.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<BaseLayout title={title} description={description} ogType="article">
+  <article style="max-width:640px;margin:0 auto;padding:0 24px;">
+    <div style="padding:56px 0 40px;">
+      <h1 style={`font-size:clamp(24px, 5vw, 34px);font-weight:700;letter-spacing:-0.03em;line-height:1.2;margin-bottom:16px;`}>
+        {title}
+      </h1>
+      <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        <span style="font-size:14px;color:var(--text-secondary);font-variant-numeric:tabular-nums;">
+          {formattedDate}
+        </span>
+        <span style="color:var(--border);font-size:14px;">&middot;</span>
+        <div style="display:flex;gap:6px;">
+          {tags.map((tag) => (
+            <span style="font-size:12px;font-weight:500;padding:3px 10px;border-radius:4px;background:var(--tag-bg);color:var(--tag-text);text-transform:lowercase;">
+              {tag}
+            </span>
+          ))}
+        </div>
+      </div>
+    </div>
+
+    <div class="prose">
+      <slot />
+    </div>
+
+    <a
+      href="/"
+      style="display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:500;color:var(--text-secondary);text-decoration:none;transition:color 0.15s;padding-bottom:64px;"
+    >
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="19" y1="12" x2="5" y2="12"></line>
+        <polyline points="12 19 5 12 12 5"></polyline>
+      </svg>
+      Back to all posts
+    </a>
+  </article>
+</BaseLayout>

@@ -1,0 +1,113 @@
+@import "tailwindcss";
+@import "@fontsource-variable/plus-jakarta-sans";
+@import "@fontsource-variable/lora";
+@import "@fontsource/jetbrains-mono";
+
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+:root {
+  --bg: #FAFAF8;
+  --text: #1C1917;
+  --text-secondary: #78716C;
+  --accent: #2563EB;
+  --accent-hover: #1D4ED8;
+  --border: #E7E5E4;
+  --tag-bg: #F5F5F4;
+  --tag-text: #57534E;
+  --tag-active-bg: #1C1917;
+  --tag-active-text: #FAFAF8;
+  --code-bg: #1E1E2E;
+  --code-text: #CDD6F4;
+
+  --font-sans: 'Plus Jakarta Sans Variable', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Lora Variable', Georgia, 'Times New Roman', serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+[data-theme="dark"] {
+  --bg: #09090B;
+  --text: #FAFAFA;
+  --text-secondary: #A1A1AA;
+  --accent: #60A5FA;
+  --accent-hover: #3B82F6;
+  --border: #27272A;
+  --tag-bg: #27272A;
+  --tag-text: #A1A1AA;
+  --tag-active-bg: #FAFAFA;
+  --tag-active-text: #09090B;
+  --code-bg: #1E1E2E;
+  --code-text: #CDD6F4;
+}
+
+@theme {
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+  --font-mono: var(--font-mono);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg);
+  color: var(--text);
+  transition: background-color 0.15s, color 0.15s;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.sr-only:focus {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: auto;
+  height: auto;
+  padding: 12px 24px;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  background: var(--accent);
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  z-index: 9999;
+  border-radius: 0 0 8px 0;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

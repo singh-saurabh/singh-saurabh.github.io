@@ -26,5 +26,12 @@ jekyll-theme-type-on-strap.gemspec
 *-test.md
 *copy.md
 
+# Astro build output
+node_modules/
+dist/
+.astro/
+.env
+.env.production
+
 # Claude Code
 CLAUDE.md

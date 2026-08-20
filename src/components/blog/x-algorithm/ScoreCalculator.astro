@@ -1,0 +1,172 @@
+---
+const rows = [
+  { name: 'favorite', w: 0.5, p: 0.12, pos: true },
+  { name: 'reply', w: 5.0, p: 0.02, pos: true },
+  { name: 'repost', w: 1.0, p: 0.03, pos: true },
+  { name: 'photo_expand', w: 0.05, p: 0.39, pos: true },
+  { name: 'click', w: 0.4, p: 0.15, pos: true },
+  { name: 'open_link', w: 0.2, p: 0.004, pos: true },
+  { name: 'share', w: 2.0, p: 0.01, pos: true },
+  { name: 'share_via_dm', w: 5.0, p: 0.004, pos: true },
+  { name: 'share_copy_link', w: 20.0, p: 0.003, pos: true },
+  { name: 'quote', w: 5.0, p: 0.002, pos: true },
+  { name: 'follow_author', w: 4.0, p: 0.02, pos: true },
+  { name: 'post_unexplored', w: 0.02, p: 0.67, pos: true },
+  { name: 'dwell_time', w: 0.004, p: 8.4, pos: true },
+  { name: 'not_interested', w: -43.2, p: 0.001, pos: false },
+  { name: 'block_author', w: -31.2, p: 0.0001, pos: false },
+  { name: 'mute_author', w: -58.8, p: 0.0002, pos: false },
+  { name: 'report', w: -234.0, p: 0.00003, pos: false },
+  { name: 'not_dwelled', w: -0.02, p: 0.23, pos: false },
+];
+
+let posSum = 0, negSum = 0;
+for (const r of rows) {
+  const c = r.w * r.p;
+  if (r.pos) posSum += c; else negSum += Math.abs(c);
+}
+const net = posSum - negSum;
+const maxC = Math.max(...rows.map(r => Math.abs(r.w * r.p)));
+---
+
+<div class="score-calc-wrap">
+  <div class="score-summary">
+    <div class="score-num">{net.toFixed(4)}</div>
+    <div class="score-detail">Positive: +{posSum.toFixed(4)}</div>
+    <div class="score-detail">Negative: -{negSum.toFixed(4)}</div>
+    <div class="score-detail" style="margin-top:6px;padding-top:6px;border-top:1px solid var(--border);">+ offset (0.001) = {(net + 0.001).toFixed(4)}</div>
+  </div>
+  <div class="score-table">
+    <div class="score-header">
+      <span class="sc-name">Action</span>
+      <span class="sc-w">Weight</span>
+      <span class="sc-x">&times;</span>
+      <span class="sc-p">P(action)</span>
+      <span class="sc-eq">=</span>
+      <span class="sc-bar-h">Contribution</span>
+      <span class="sc-val-h">Value</span>
+    </div>
+    {rows.map(r => {
+      const c = r.w * r.p;
+      const pct = Math.min(Math.abs(c) / maxC * 100, 100);
+      return (
+        <div class="score-row">
+          <span class="sc-name">{r.name}</span>
+          <span class="sc-w">{r.w > 0 ? '+' : ''}{r.w}</span>
+          <span class="sc-x">&times;</span>
+          <span class="sc-p">{r.p}</span>
+          <span class="sc-eq">=</span>
+          <span class="sc-bar-wrap">
+            <span class={`sc-bar ${r.pos ? 'sc-pos' : 'sc-neg'}`} style={`width:${pct}%`}></span>
+          </span>
+          <span class={`sc-val ${r.pos ? 'sc-val-pos' : 'sc-val-neg'}`}>
+            {r.pos ? '+' : ''}{c.toFixed(4)}
+          </span>
+        </div>
+      );
+    })}
+  </div>
+</div>
+
+<style>
+  .score-calc-wrap {
+    margin: 24px 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .score-summary {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+  .score-num {
+    font-family: var(--font-mono);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .score-detail {
+    font-family: var(--font-mono);
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+  .score-table {
+    padding: 8px 0;
+    overflow-x: auto;
+  }
+  .score-header, .score-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 16px;
+    font-size: 12px;
+  }
+  .score-header {
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding-bottom: 6px;
+    border-bottom: 1px solid var(--border);
+  }
+  .score-row:hover {
+    background: var(--tag-bg);
+  }
+  .sc-name {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    width: 120px;
+    flex: none;
+    text-align: right;
+    color: var(--text-secondary);
+  }
+  .sc-w {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    width: 50px;
+    flex: none;
+    text-align: right;
+    color: var(--text-secondary);
+  }
+  .sc-x, .sc-eq {
+    color: var(--text-secondary);
+    flex: none;
+    font-size: 10px;
+    opacity: 0.5;
+  }
+  .sc-p {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    width: 50px;
+    flex: none;
+    text-align: right;
+    color: var(--accent);
+  }
+  .sc-bar-wrap, .sc-bar-h {
+    flex: 1;
+    min-width: 60px;
+  }
+  .sc-bar-wrap {
+    height: 14px;
+    position: relative;
+  }
+  .sc-bar {
+    height: 100%;
+    border-radius: 2px;
+    min-width: 1px;
+  }
+  .sc-pos { background: #10B981; opacity: 0.7; }
+  .sc-neg { background: #EF4444; opacity: 0.7; }
+  .sc-val, .sc-val-h {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    width: 60px;
+    flex: none;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .sc-val-pos { color: #10B981; }
+  .sc-val-neg { color: #EF4444; }
+</style>

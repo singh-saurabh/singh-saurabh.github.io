@@ -1,0 +1,382 @@
+---
+// Full interactive post journey slideshow, adapted for the blog's light/dark theme
+---
+
+<div class="pj-wrap" id="pj">
+  <div class="pj-banner">Predicted probabilities are illustrative. Weights and thresholds are from the open-source code.</div>
+  <div class="pj-viewport" id="pj-viewport"></div>
+  <div class="pj-nav">
+    <button class="pj-btn" id="pj-prev" disabled>&#8592; Prev</button>
+    <div class="pj-dots" id="pj-dots"></div>
+    <button class="pj-btn" id="pj-next">Next &#8594;</button>
+  </div>
+  <div class="pj-step-label" id="pj-label"></div>
+</div>
+
+<style is:global>
+  .pj-wrap {
+    position: relative;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 32px -24px;
+    background: var(--bg);
+  }
+  /* Reset prose overrides inside the component */
+  .pj-wrap p,
+  .pj-wrap h2,
+  .pj-wrap h3,
+  .pj-wrap ul,
+  .pj-wrap li,
+  .pj-wrap a {
+    all: revert;
+    font-family: var(--font-sans);
+    color: var(--text);
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    line-height: 1.5;
+  }
+  .pj-wrap p { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; }
+  .pj-wrap code { font-family: var(--font-mono); font-size: 0.9em; background: var(--tag-bg); padding: 1px 4px; border-radius: 3px; color: var(--text); }
+  .pj-wrap strong { font-weight: 700; color: var(--text); }
+  @media (max-width: 700px) { .pj-wrap { margin: 24px -12px; } }
+  .pj-banner {
+    background: var(--tag-bg);
+    border-bottom: 1px solid var(--border);
+    padding: 5px 16px;
+    font-size: 10px;
+    font-family: var(--font-mono);
+    color: var(--text-secondary);
+  }
+  .pj-viewport {
+    position: relative;
+    min-height: 520px;
+    overflow: hidden;
+  }
+  .pj-slide {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s, transform 0.3s;
+    transform: translateX(30px);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 20px 24px;
+    visibility: hidden;
+  }
+  .pj-slide.active {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateX(0);
+    visibility: visible;
+    z-index: 10;
+  }
+  .pj-slide.prev { transform: translateX(-30px); }
+  .pj-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    padding: 10px 16px;
+    border-top: 1px solid var(--border);
+    background: var(--bg);
+  }
+  .pj-btn {
+    background: var(--tag-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 5px 14px;
+    color: var(--text);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    cursor: pointer;
+    transition: 0.15s;
+  }
+  .pj-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+  .pj-btn:disabled { opacity: 0.3; cursor: default; }
+  .pj-dots { display: flex; gap: 5px; align-items: center; }
+  .pj-dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--border); cursor: pointer;
+    transition: 0.2s; border: none; padding: 0;
+  }
+  .pj-dot.active { background: var(--accent); box-shadow: 0 0 6px var(--accent); }
+  .pj-dot:hover:not(.active) { background: var(--text-secondary); }
+  .pj-step-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 0 0 6px;
+  }
+  /* Inner elements */
+  .pj-num { font-family: var(--font-mono); font-size: 10px; color: var(--accent); letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 4px; }
+  .pj-title { font-family: var(--font-sans); font-size: 18px; font-weight: 700; margin-bottom: 4px; letter-spacing: -0.01em; }
+  .pj-sub { font-size: 13px; color: var(--text-secondary); margin-bottom: 14px; line-height: 1.5; }
+  .pj-2col { display: flex; gap: 20px; align-items: flex-start; }
+  .pj-main { flex: 1; min-width: 0; }
+  .pj-card-col { width: 280px; flex: none; }
+  @media (max-width: 800px) { .pj-2col { flex-direction: column; } .pj-card-col { width: 100%; } }
+  /* Post card */
+  .pc { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 12px; background: var(--bg); }
+  .pc-h { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .pc-av { width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg,#ff7e5f,#feb47b); display: flex; align-items: center; justify-content: center; font-size: 14px; color: #fff; font-weight: 700; flex: none; }
+  .pc-nm { font-weight: 700; font-size: 12px; }.pc-hn { font-size: 11px; color: var(--text-secondary); }.pc-tm { font-size: 10px; color: var(--text-secondary); margin-left: auto; }
+  .pc-tx { font-size: 12px; line-height: 1.45; margin-bottom: 8px; }
+  .pc-im { width: 100%; height: 90px; border-radius: 6px; background: linear-gradient(135deg,#1a1a3e,#2d1b69,#e94560,#ff9a3c,#ffd93d); margin-bottom: 6px; }
+  .pc-st { display: flex; gap: 12px; font-size: 10px; color: var(--text-secondary); font-family: var(--font-mono); }
+  .pc-bg { display: flex; flex-wrap: wrap; gap: 3px; margin-top: 6px; }
+  .bg { font-family: var(--font-mono); font-size: 8px; padding: 1px 5px; border-radius: 5px; }
+  .bg-g { background: rgba(16,185,129,0.1); color: #10B981; }
+  .bg-b { background: rgba(37,99,235,0.1); color: #2563EB; }
+  .bg-p { background: rgba(124,58,237,0.1); color: #7C3AED; }
+  .bg-w { background: rgba(239,68,68,0.1); color: #EF4444; }
+  [data-theme="dark"] .bg-g { color: #34D399; } [data-theme="dark"] .bg-b { color: #60A5FA; } [data-theme="dark"] .bg-p { color: #A78BFA; }
+  /* Data rows */
+  .dr { display: flex; align-items: center; gap: 6px; padding: 2px 0; font-size: 11px; border-bottom: 1px solid var(--border); }
+  .dr:last-child { border: none; }
+  .dr-n { font-family: var(--font-mono); font-size: 10px; width: 130px; flex: none; }
+  .dr-v { font-family: var(--font-mono); font-size: 10px; color: var(--accent); width: 55px; flex: none; text-align: right; }
+  .dr-d { flex: 1; color: var(--text-secondary); font-size: 10px; }
+  /* Score bars */
+  .sb { display: flex; align-items: center; gap: 4px; margin: 1px 0; font-size: 10px; }
+  .sb-n { font-family: var(--font-mono); font-size: 9px; width: 100px; flex: none; text-align: right; color: var(--text-secondary); }
+  .sb-w { font-family: var(--font-mono); font-size: 9px; width: 38px; flex: none; text-align: right; color: var(--text-secondary); }
+  .sb-x { color: var(--text-secondary); flex: none; font-size: 9px; opacity: 0.4; }
+  .sb-p { font-family: var(--font-mono); font-size: 9px; width: 40px; flex: none; text-align: right; color: var(--accent); }
+  .sb-bw { flex: 1; height: 12px; min-width: 40px; }
+  .sb-b { height: 100%; border-radius: 2px; min-width: 1px; }
+  .sb-b.pos { background: #10B981; opacity: 0.6; } .sb-b.neg { background: #EF4444; opacity: 0.6; }
+  .sb-v { font-family: var(--font-mono); font-size: 9px; width: 50px; flex: none; text-align: right; font-variant-numeric: tabular-nums; }
+  .sb-vp { color: #10B981; } .sb-vn { color: #EF4444; }
+  /* Funnel */
+  .fr { display: flex; align-items: center; gap: 6px; margin: 2px 0; font-size: 10px; }
+  .fr-n { font-family: var(--font-mono); font-size: 9px; width: 140px; flex: none; text-align: right; color: var(--text-secondary); }
+  .fr-bw { flex: 1; height: 12px; } .fr-b { height: 100%; border-radius: 2px; background: var(--accent); opacity: 0.4; min-width: 2px; }
+  .fr-c { font-family: var(--font-mono); font-size: 9px; width: 40px; flex: none; text-align: right; font-variant-numeric: tabular-nums; }
+  .fr-s { font-family: var(--font-mono); font-size: 8px; padding: 1px 4px; border-radius: 3px; flex: none; width: 30px; text-align: center; }
+  .fr-sp { background: rgba(16,185,129,0.1); color: #10B981; } .fr-sf { background: rgba(239,68,68,0.1); color: #EF4444; }
+  /* VF */
+  .vr { display: flex; align-items: center; gap: 6px; padding: 3px 0; font-size: 11px; }
+  .vi { width: 16px; height: 16px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; flex: none; background: rgba(16,185,129,0.1); color: #10B981; }
+  .vn { font-family: var(--font-mono); font-size: 10px; min-width: 150px; flex: none; }
+  .vd { font-size: 10px; color: var(--text-secondary); }
+  /* Panels */
+  .xp { border: 1px solid var(--border); border-radius: 6px; margin: 5px 0; overflow: hidden; }
+  .xh { padding: 7px 12px; display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none; font-size: 11px; }
+  .xh:hover { background: var(--tag-bg); }
+  .xc { font-size: 9px; color: var(--text-secondary); transition: transform 0.2s; }
+  .xp.o .xc { transform: rotate(90deg); }
+  .xt { font-family: var(--font-mono); font-size: 10px; font-weight: 600; flex: 1; }
+  .xb { display: none; padding: 4px 12px 10px; font-size: 11px; color: var(--text-secondary); line-height: 1.55; }
+  .xp.o .xb { display: block; }
+  /* Grid */
+  .cg { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 5px; margin: 8px 0; }
+  .cd { border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px; font-size: 10px; }
+  .cd-t { font-family: var(--font-mono); font-size: 10px; font-weight: 600; margin-bottom: 2px; }
+  .cd-v { color: var(--text-secondary); }
+  /* Stats */
+  .sr { display: flex; gap: 6px; flex-wrap: wrap; margin: 8px 0; }
+  .st { border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; }
+  .sv { font-family: var(--font-mono); font-size: 16px; font-weight: 700; color: var(--accent); }
+  .sl { font-size: 9px; color: var(--text-secondary); }
+  /* Score display */
+  .score-big { font-family: var(--font-mono); font-size: 24px; font-weight: 700; color: var(--accent); margin: 6px 0; }
+  .score-c { font-family: var(--font-mono); font-size: 11px; color: var(--text-secondary); margin: 2px 0; }
+  /* Callout */
+  .co { border: 1px solid var(--accent); border-radius: 6px; padding: 8px 10px; margin: 8px 0; font-size: 11px; line-height: 1.5; background: rgba(37,99,235,0.04); }
+  .co strong { color: var(--accent); }
+  .co.w { border-color: #EF4444; background: rgba(239,68,68,0.04); }
+  .co.w strong { color: #EF4444; }
+  [data-theme="dark"] .co { background: rgba(96,165,250,0.06); }
+  [data-theme="dark"] .co.w { background: rgba(239,68,68,0.06); }
+  /* Toggle */
+  .tg-w { display: flex; align-items: center; gap: 8px; margin: 8px 0; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; }
+  .tg-l { font-size: 11px; color: var(--text-secondary); flex: 1; }
+  .tg { width: 36px; height: 20px; border-radius: 10px; background: var(--border); cursor: pointer; position: relative; transition: 0.2s; border: none; padding: 0; }
+  .tg.on { background: var(--accent); }
+  .tg::after { content: ''; position: absolute; top: 2px; left: 2px; width: 16px; height: 16px; border-radius: 50%; background: var(--bg); transition: 0.2s; border: 1px solid var(--border); }
+  .tg.on::after { left: 18px; border-color: var(--accent); }
+  /* Formula */
+  .fm { border: 1px solid var(--border); border-left: 3px solid var(--accent); border-radius: 0 6px 6px 0; padding: 8px 12px; margin: 6px 0; font-family: var(--font-mono); font-size: 10px; line-height: 1.7; overflow-x: auto; white-space: pre-wrap; background: var(--tag-bg); }
+  @media (prefers-reduced-motion: reduce) { .pj-slide { transition: none; } }
+</style>
+
+<script is:inline>
+(function(){
+const POST = { author:'@naturephotog', name:'Sarah Chen', followers:500 };
+const VIEWER = { handle:'@techreader', following:847 };
+
+function pc(badges){
+  return `<div class="pc"><div class="pc-h"><div class="pc-av">S</div><div><div class="pc-nm">${POST.name}</div><div class="pc-hn">${POST.author} &middot; ${POST.followers} followers</div></div><div class="pc-tm">2h ago</div></div><div class="pc-tx">Just watched an incredible sunset over the Pacific. The colors were unreal</div><div class="pc-im"></div><div class="pc-st"><span>47 likes</span><span>3 replies</span><span>8 reposts</span><span>1,892 views</span></div>${badges?`<div class="pc-bg">${badges}</div>`:''}</div>`;
+}
+function bg(t,c){return `<span class="bg bg-${c}">${t}</span>`;}
+
+const STEPS=[
+{num:'PREAMBLE',title:'Before the Request',sub:`2 hours ago, ${POST.author} published this post. These systems processed it asynchronously.`,
+body:()=>`<div class="pj-2col"><div class="pj-card-col">${pc('')}</div><div class="pj-main">
+<div class="xp o"><div class="xh" onclick="xpt(this)"><span class="xc">&#9654;</span><span class="xt">Grox PTOS -- 10 Safety Categories</span></div><div class="xb">
+${['AdultContent','ChildSafety','HateOrAbuse','Spam','ViolentMedia','ViolentSpeech','SuicideOrSelfHarm','IllegalRegulated','CivicIntegrity','Terrorism'].map(c=>`<div class="vr"><div class="vi">&#10003;</div><span class="vn">${c}</span><span class="vd">NoViolation</span></div>`).join('')}
+</div></div>
+<div class="xp"><div class="xh" onclick="xpt(this)"><span class="xc">&#9654;</span><span class="xt">UPA -- Content Understanding</span></div><div class="xb">
+<div class="cg"><div class="cd"><div class="cd-t">Tags</div><div class="cd-v">sunset, nature, photography</div></div><div class="cd"><div class="cd-t">isHighQuality</div><div class="cd-v" style="color:#10B981">true</div></div><div class="cd"><div class="cd-t">isNsfw/isSpam</div><div class="cd-v">false / false</div></div><div class="cd"><div class="cd-t">slop_score</div><div class="cd-v">0.08 (not AI)</div></div></div>
+</div></div>
+<div class="xp"><div class="xh" onclick="xpt(this)"><span class="xc">&#9654;</span><span class="xt">Multimodal Embedding + SID</span></div><div class="xb"><div class="fm">SID: [142, 87, 201, 55, 178, 92]\nL1: 142 = Visual Arts & Photography\nL1-L2: 142-87 = Landscape/Nature\n~340 posts share the L1-L2 prefix</div></div></div>
+<div class="xp"><div class="xh" onclick="xpt(this)"><span class="xc">&#9654;</span><span class="xt">Media + Account Scores</span></div><div class="xb"><div class="cg"><div class="cd"><div class="cd-t">NSFW</div><div class="cd-v">0.02</div></div><div class="cd"><div class="cd-t">Bot score</div><div class="cd-v">0.04</div></div><div class="cd"><div class="cd-t">Block ratio</div><div class="cd-v">0.002</div></div><div class="cd"><div class="cd-t">UserCred</div><div class="cd-v">moderate</div></div></div></div></div>
+</div></div>`},
+
+{num:'STEP 1',title:'Feed Request',sub:`${VIEWER.handle} opens For You. 16 hydrators load viewer context in parallel.`,
+body:()=>`<div class="pj-2col"><div class="pj-card-col">${pc('')}<div class="co"><strong>Viewer does NOT follow ${POST.author}.</strong> This post can only reach them through out-of-network retrieval.</div></div><div class="pj-main">
+<div class="cg"><div class="cd"><div class="cd-t">ScoringSequence</div><div class="cd-v">1,024 actions (Arrow)</div></div><div class="cd"><div class="cd-t">Following</div><div class="cd-v">${VIEWER.following} accounts</div></div><div class="cd"><div class="cd-t">Blocked</div><div class="cd-v">23 accounts</div></div><div class="cd"><div class="cd-t">Muted</div><div class="cd-v">5 accounts</div></div><div class="cd"><div class="cd-t">ImpressedPosts</div><div class="cd-v">Bloom filter + list</div></div><div class="cd"><div class="cd-t">IP / Geo</div><div class="cd-v">California, US</div></div><div class="cd"><div class="cd-t">Demographics</div><div class="cd-v">25-34, en</div></div><div class="cd"><div class="cd-t">MutualFollows</div><div class="cd-v">47</div></div><div class="cd"><div class="cd-t">Topics</div><div class="cd-v">tech, photography</div></div></div>
+</div></div>`},
+
+{num:'STEP 2',title:'Candidate Retrieval',sub:'Three sources fetch candidates in parallel.',
+body:()=>`<div class="pj-2col"><div class="pj-card-col">${pc(bg('OON','b')+bg('Phoenix #127','p')+bg('SimClusters #341','p'))}</div><div class="pj-main">
+<div class="sr"><div class="st"><div class="sv">2,189</div><div class="sl">Total (deduped)</div></div></div>
+<div class="xp o"><div class="xh" onclick="xpt(this)"><span class="xc">&#9654;</span><span class="xt" style="color:#10B981">Thunder (In-Network) -- 873</span></div><div class="xb"><div class="co w"><strong>NOT here.</strong> Viewer doesn't follow author. Thunder only returns followed accounts' posts.</div></div></div>
+<div class="xp o"><div class="xh" onclick="xpt(this)"><span class="xc">&#9654;</span><span class="xt" style="color:var(--accent)">Phoenix Retrieval (OON) -- 967</span></div><div class="xb"><div class="co"><strong>FOUND at rank #127</strong> (dot product: 0.74). Viewer's embedding aligns with nature/photography cluster.</div></div></div>
+<div class="xp o"><div class="xh" onclick="xpt(this)"><span class="xc">&#9654;</span><span class="xt" style="color:#7C3AED">SimClusters (OON) -- 612</span></div><div class="xb"><div class="co"><strong>Also found at rank #341</strong> (cluster overlap: 0.31). Different retrieval signal via community structure.</div></div></div>
+</div></div>`},
+
+{num:'STEP 3',title:'Candidate Hydration',sub:'14 hydrators enrich each of the 2,189 candidates.',
+body:()=>`<div class="pj-2col"><div class="pj-card-col">${pc(bg('OON','b')+bg('in_network=false','w'))}</div><div class="pj-main">
+<div class="cg"><div class="cd"><div class="cd-t">Engagement</div><div class="cd-v">47 favs, 3 replies, 1,892 views</div></div><div class="cd"><div class="cd-t">SID</div><div class="cd-v">[142, 87, 201, 55, 178, 92]</div></div><div class="cd"><div class="cd-t">InNetwork</div><div class="cd-v" style="color:#EF4444">false</div></div><div class="cd"><div class="cd-t">BidirectionalFollow</div><div class="cd-v" style="color:#EF4444">false</div></div><div class="cd"><div class="cd-t">VF pre-check</div><div class="cd-v" style="color:#10B981">clean</div></div><div class="cd"><div class="cd-t">Media</div><div class="cd-v">1 image, no video</div></div></div>
+<div class="co"><strong>Candidate isolation:</strong> During scoring, this post's score won't depend on what other posts are in the batch. Scores are independent and cacheable.</div>
+</div></div>`},
+
+{num:'STEP 4',title:'Pre-Scoring Filters',sub:'17 filters run in order. 2,189 candidates enter, 1,862 survive.',
+body:()=>{
+const ff=[['DropDuplicates',2200,2200],['CoreDataHydration',2200,2192],['AgeFilter (48h)',2192,2158],['SelfTweet',2158,2158],['OONRetweetReply',2158,2109],['OONNsfwSimclusters',2109,2102],['RetweetDedup',2102,2084],['Subscription',2084,2084],['PreviouslySeen (x3)',2084,1905],['MutedKeyword',1905,1900],['AuthorSocialgraph',1900,1873],['VideoFilter',1873,1873],['TopicIds',1873,1873],['NewUserEngagement',1873,1873],['InventoryHoldout',1873,1862]];
+return `<div class="pj-2col"><div class="pj-card-col">${pc(bg('PASSES ALL 17','g'))}<div class="sr"><div class="st"><div class="sv">2,189</div><div class="sl">In</div></div><div class="st"><div class="sv" style="color:#EF4444">327</div><div class="sl">Removed</div></div><div class="st"><div class="sv">1,862</div><div class="sl">Survive</div></div></div></div><div class="pj-main">
+${ff.map(([n,b,a])=>{const r=b-a;return `<div class="fr"><span class="fr-n">${n}</span><span class="fr-bw"><span class="fr-b" style="width:${Math.max(a/2200*100,2)}%"></span></span><span class="fr-c">${a.toLocaleString()}</span>${r>0?`<span class="fr-s fr-sf">-${r}</span>`:`<span class="fr-s fr-sp">&#10003;</span>`}</div>`;}).join('')}
+</div></div>`;}},
+
+{num:'STEP 5',title:'Phoenix Model Prediction',sub:'The transformer predicts P(action) for each candidate. These are per-viewer, per-post.',
+body:()=>`<div class="pj-2col"><div class="pj-card-col">${pc(bg('P(fav)=0.12','b')+bg('P(photo)=0.39','b')+bg('E[dwell]=8.4s','p'))}
+<div class="co"><strong>Not counting likes.</strong> Predicts how likely THIS viewer will take each action, based on their 1,024-action history.</div></div><div class="pj-main">
+<div class="xp o"><div class="xh" onclick="xpt(this)"><span class="xc">&#9654;</span><span class="xt">How the model computes probabilities</span></div><div class="xb">
+<div class="fm">1. Build 1088-token input sequence:\n   [user_emb, user_features, 1022 history tokens, 64 candidates]\n   Each token: hash embeddings + SID + context -> 2560d\n\n2. 8-layer transformer (GQA 20Q/4KV, RMSNorm, FFN 2x)\n   Candidates isolated via unique segment IDs\n\n3. Extract 64 candidate outputs\n\n4. Linear projection [2560, 64] -> 64 action logits\n   P(action) = sigmoid(logit)\n\n5. Separate projection [2560, 8] -> dwell time\n   softplus(logit), norm_scale=30s</div>
+</div></div>
+${[['P(favorite)','0.12','Somewhat likely to like'],['P(reply)','0.02','Low -- not conversational'],['P(repost)','0.03','Moderate share-worthiness'],['P(photo_expand)','0.39','High -- invites closer look'],['P(click)','0.15','Likely to tap in'],['P(follow_author)','0.02','Small chance'],['P(share_copy_link)','0.003','Very low'],['P(not_interested)','0.001','Near zero'],['P(report)','0.00003','Near zero'],['P(not_dwelled)','0.23','Some scroll-past chance'],['E[dwell_time]','8.4s','softplus output']].map(([n,v,d])=>`<div class="dr"><span class="dr-n">${n}</span><span class="dr-v">${v}</span><span class="dr-d">${d}</span></div>`).join('')}
+</div></div>`},
+
+{num:'STEP 6',title:'RankingScorer',sub:'Each P(action) is multiplied by its weight (from param.rs) and summed.',
+body:()=>{
+const rw=[['favorite',0.5,0.12,1],['reply',5,0.02,1],['repost',1,0.03,1],['photo_expand',0.05,0.39,1],['click',0.4,0.15,1],['open_link',0.2,0.004,1],['share',2,0.01,1],['share_via_dm',5,0.004,1],['share_copy_link',20,0.003,1],['quote',5,0.002,1],['follow_author',4,0.02,1],['post_unexplored',0.02,0.67,1],['dwell_time',0.004,8.4,1],['not_interested',-43.2,0.001,0],['block_author',-31.2,0.0001,0],['mute_author',-58.8,0.0002,0],['report',-234,0.00003,0],['not_dwelled',-0.02,0.23,0]];
+let ps=0,ns=0;rw.forEach(([_,w,p,po])=>{const c=w*p;if(po)ps+=c;else ns+=Math.abs(c);});
+const net=ps-ns,mx=Math.max(...rw.map(([_,w,p])=>Math.abs(w*p)));
+return `<div class="pj-2col"><div class="pj-card-col">
+<div class="score-big">${net.toFixed(4)}</div>
+<div class="score-c">Positive: +${ps.toFixed(4)}</div>
+<div class="score-c">Negative: -${ns.toFixed(4)}</div>
+<div class="score-c" style="margin-top:4px;padding-top:4px;border-top:1px solid var(--border)">+ offset = ${(net+0.001).toFixed(4)}</div>
+<div class="co" style="margin-top:8px"><strong>Weights from param.rs.</strong> Probabilities are illustrative.</div>
+</div><div class="pj-main">
+${rw.map(([n,w,p,po])=>{const c=w*p,pct=Math.min(Math.abs(c)/mx*100,100);return `<div class="sb"><span class="sb-n">${n}</span><span class="sb-w">${w>0?'+':''}${w}</span><span class="sb-x">&times;</span><span class="sb-p">${p}</span><span class="sb-bw"><span class="sb-b ${po?'pos':'neg'}" style="width:${pct}%"></span></span><span class="sb-v ${po?'sb-vp':'sb-vn'}">${po?'+':''}${c.toFixed(4)}</span></div>`;}).join('')}
+</div></div>`;}},
+
+{num:'STEP 7',title:'Score Adjustments',sub:'Author diversity, OON discount, bidirectional boost, cold start.',
+body:()=>`<div class="pj-2col"><div class="pj-card-col"><div id="pj-adj"></div></div><div class="pj-main">
+<div class="xp o"><div class="xh" onclick="xpt(this)"><span class="xc">&#9654;</span><span class="xt">Author Diversity: 1.0x</span></div><div class="xb">First post by this author (k=0). Formula: (1-0.25)*0.5^0 + 0.25 = 1.0x. Second would be 0.625x, third 0.4375x, fourth+ 0.25x.</div></div>
+<div class="xp o"><div class="xh" onclick="xpt(this)"><span class="xc">&#9654;</span><span class="xt">OON Discount: 0.75x</span></div><div class="xb">
+<p>Viewer doesn't follow author. 25% score penalty.</p>
+<div class="tg-w"><span class="tg-l">What if ${VIEWER.handle} followed ${POST.author}?</span><button class="tg" id="pj-oon" onclick="pjToggleOON()"></button></div>
+<div id="pj-oon-fx" class="fm">OON discount applied: score * 0.75</div>
+</div></div>
+<div class="xp o"><div class="xh" onclick="xpt(this)"><span class="xc">&#9654;</span><span class="xt">Bidirectional Boost: N/A</span></div><div class="xb">If mutual follow + original post, reply weight jumps 5.0 -> 20.0 (+15). Not applicable here.</div></div>
+<div class="xp"><div class="xh" onclick="xpt(this)"><span class="xc">&#9654;</span><span class="xt">Cold Start: N/A</span></div><div class="xb">1,892 views > 1,000 threshold. No boost.</div></div>
+</div></div>`},
+
+{num:'STEP 8',title:'VMRanker DPP',sub:'Top 150 reranked for diversity using Determinantal Point Process.',
+body:()=>`<div class="pj-2col"><div class="pj-card-col">${pc(bg('Pre-DPP #23','b')+bg('Post-DPP #19','g')+bg('Promoted +4','g'))}</div><div class="pj-main">
+<div class="sr"><div class="st"><div class="sv">0.65</div><div class="sl">DPP theta</div></div><div class="st"><div class="sv">150</div><div class="sl">Pool</div></div><div class="st"><div class="sv">#23&#8594;#19</div><div class="sl">Rank change</div></div></div>
+<div class="fm">1. Pool = top 150 by score\n2. Quality: qf[i] = exp(0.929 * q[i])\n3. Kernel: L[i,j] = qf[i]*qf[j]*cos(emb_i, emb_j)\n4. Greedy Cholesky: max conditional variance\n5. SID prefix 142 (nature) underrepresented -> promoted</div>
+<div class="co"><strong>Diversity wins.</strong> Top posts were heavy on tech/news. Sunset photo brings thematic variety. Avg cosine: 0.34 before, 0.19 after.</div>
+</div></div>`},
+
+{num:'STEP 9',title:'Visibility Filtering',sub:'54 rules evaluated. First Drop ends evaluation.',
+body:()=>`<div class="pj-2col"><div class="pj-card-col">${pc(bg('ALLOW','g'))}<div class="score-big" style="color:#10B981">ALLOW</div><p style="font-size:10px;color:var(--text-secondary)">All 54 rules passed.</p></div><div class="pj-main">
+<p style="font-size:10px;color:var(--text-secondary);font-family:var(--font-mono);margin-bottom:4px">BASE RULES (28)</p>
+${[['Author State (5)','Active, not suspended'],['Viewer Relationship (3)','No blocks/mutes'],['Tweet Labels (8)','No safety labels'],['Platform (5)','Not stale/takedown'],['Viewer Age (3)','Logged in, stated age'],['NSFW Interstitials (4)','No NSFW/gore']].map(([n,d])=>`<div class="vr"><div class="vi">&#10003;</div><span class="vn">${n}</span><span class="vd">${d}</span></div>`).join('')}
+<p style="font-size:10px;color:var(--text-secondary);font-family:var(--font-mono);margin:8px 0 4px">OON-ONLY (+26)</p>
+${[['Tweet Drops (14)','No NSFW/spam/malicious labels'],['Author Drops (12)','No compromised/impersonation']].map(([n,d])=>`<div class="vr"><div class="vi">&#10003;</div><span class="vn">${n}</span><span class="vd">${d}</span></div>`).join('')}
+<div class="co" style="margin-top:8px"><strong>OON posts face 26 extra rules.</strong> Same post from a followed account only needs 28 rules.</div>
+</div></div>`},
+
+{num:'STEP 10',title:'Delivered to Feed',sub:'Blending inserts ads, WTF, prompts around 35 organic posts.',
+body:()=>`<div class="pj-2col"><div class="pj-card-col">${pc(bg('Position #17','g')+bg('OON Discovery','b')+bg('DPP Promoted','p'))}</div><div class="pj-main">
+<div class="sr"><div class="st"><div class="sv">35</div><div class="sl">Organic posts</div></div><div class="st"><div class="sv">#19</div><div class="sl">Organic rank</div></div><div class="st"><div class="sv">#17</div><div class="sl">Feed position</div></div><div class="st"><div class="sv">~186ms</div><div class="sl">Latency</div></div></div>
+<div class="fm">Feed composition:\n  Position 0: Push-to-home (if any)\n  Positions 1-5: Top organic posts\n  Position 6: Who to Follow module\n  Positions 7-16: Organic + 2 ad slots\n  Position 17: * OUR POST *\n  Positions 18-35: Remaining + ads\n\nTotal: ~47 items</div>
+<div class="co"><strong>Journey complete.</strong> A sunset photo from an unfollowed account traveled through Kafka, LLM classification, neural retrieval, transformer scoring, diversity reranking, and 54 safety rules to land at position 17 in ~186ms.</div>
+</div></div>`}
+];
+
+// Render
+const vp=document.getElementById('pj-viewport');
+const dots=document.getElementById('pj-dots');
+const label=document.getElementById('pj-label');
+let cur=0,oonOn=false;
+
+STEPS.forEach((s,i)=>{
+  const sl=document.createElement('div');
+  sl.className='pj-slide'+(i===0?' active':'');
+  sl.innerHTML=`<div class="pj-num">${s.num}</div><div class="pj-title">${s.title}</div><div class="pj-sub">${s.sub}</div><div>${s.body()}</div>`;
+  vp.appendChild(sl);
+  const d=document.createElement('button');
+  d.className='pj-dot'+(i===0?' active':'');
+  d.title=s.title;
+  d.onclick=()=>goTo(i);
+  dots.appendChild(d);
+});
+
+function goTo(n){
+  if(n<0||n>=STEPS.length)return;
+  cur=n;
+  document.querySelectorAll('.pj-slide').forEach((s,i)=>{
+    s.classList.remove('active','prev');
+    if(i===cur)s.classList.add('active');
+    else if(i<cur)s.classList.add('prev');
+  });
+  document.querySelectorAll('.pj-dot').forEach((d,i)=>d.classList.toggle('active',i===cur));
+  label.textContent=STEPS[cur].num+': '+STEPS[cur].title;
+  document.getElementById('pj-prev').disabled=cur===0;
+  document.getElementById('pj-next').disabled=cur===STEPS.length-1;
+  if(cur===7)updAdj();
+}
+document.getElementById('pj-prev').onclick=()=>goTo(cur-1);
+document.getElementById('pj-next').onclick=()=>goTo(cur+1);
+
+// Keyboard (only when pj is in view)
+document.addEventListener('keydown',e=>{
+  const r=document.getElementById('pj').getBoundingClientRect();
+  if(r.top>window.innerHeight||r.bottom<0)return;
+  if(e.key==='ArrowRight'){e.preventDefault();goTo(cur+1);}
+  if(e.key==='ArrowLeft'){e.preventDefault();goTo(cur-1);}
+});
+
+// OON toggle
+window.pjToggleOON=function(){
+  oonOn=!oonOn;
+  const btn=document.getElementById('pj-oon');
+  if(btn)btn.classList.toggle('on',oonOn);
+  const fx=document.getElementById('pj-oon-fx');
+  if(fx)fx.innerHTML=oonOn?'OON discount REMOVED: score * 1.0\nBidirectional boost: reply weight 5.0 + 15.0 = 20.0\n\nNew reply contribution: 20.0 * 0.02 = 0.40 (was 0.10)\nNew score: ~0.63 (nearly 2.5x higher!)':'OON discount applied: score * 0.75';
+  updAdj();
+};
+function updAdj(){
+  const el=document.getElementById('pj-adj');
+  if(!el)return;
+  if(oonOn){
+    el.innerHTML='<div class="score-big" style="color:#10B981">0.6312</div><div class="score-c">Raw + reply boost</div><div class="score-c">OON: 1.0x (following)</div><div class="score-c">BiDir: +15.0</div><div class="score-c" style="color:#10B981">~2.5x higher!</div>';
+  } else {
+    el.innerHTML='<div class="score-big">0.2554</div><div class="score-c">Raw: 0.3405</div><div class="score-c">Diversity: 1.0x</div><div class="score-c" style="color:#EF4444">OON: 0.75x</div><div class="score-c">0.3405 * 0.75 = 0.2554</div>';
+  }
+}
+
+window.xpt=function(h){h.closest('.xp').classList.toggle('o');};
+goTo(0);
+})();
+</script>

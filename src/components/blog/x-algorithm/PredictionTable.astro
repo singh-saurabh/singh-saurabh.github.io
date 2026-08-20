@@ -1,0 +1,91 @@
+---
+const predictions = [
+  { action: 'P(favorite)', prob: '0.12', note: 'Somewhat likely to like' },
+  { action: 'P(reply)', prob: '0.02', note: 'Low — photo, not conversational' },
+  { action: 'P(repost)', prob: '0.03', note: 'Moderate share-worthiness' },
+  { action: 'P(photo_expand)', prob: '0.39', note: 'High — invites a closer look' },
+  { action: 'P(click)', prob: '0.15', note: 'Likely to tap in' },
+  { action: 'P(profile_click)', prob: '0.03', note: 'May check author' },
+  { action: 'P(follow_author)', prob: '0.02', note: 'Small chance' },
+  { action: 'P(share)', prob: '0.01', note: 'Low' },
+  { action: 'P(share_via_dm)', prob: '0.004', note: 'Very low' },
+  { action: 'P(share_copy_link)', prob: '0.003', note: 'Very low' },
+  { action: 'P(quote)', prob: '0.002', note: 'Very low' },
+  { action: 'P(not_interested)', prob: '0.001', note: 'Near zero' },
+  { action: 'P(mute_author)', prob: '0.0002', note: 'Negligible' },
+  { action: 'P(block_author)', prob: '0.0001', note: 'Negligible' },
+  { action: 'P(report)', prob: '0.00003', note: 'Near zero' },
+  { action: 'P(not_dwelled)', prob: '0.23', note: 'Some chance of scroll-past' },
+];
+const continuous = [
+  { action: 'E[dwell_time]', value: '8.4s', note: 'softplus output, norm_scale=30s' },
+  { action: 'E[click_dwell]', value: '0.0s', note: 'No link' },
+];
+---
+
+<div class="pred-wrap">
+  <div class="pred-section-label">Discrete actions (sigmoid output)</div>
+  {predictions.map(p => (
+    <div class="pred-row">
+      <span class="pred-action">{p.action}</span>
+      <span class="pred-prob">{p.prob}</span>
+      <span class="pred-note">{p.note}</span>
+    </div>
+  ))}
+  <div class="pred-section-label" style="margin-top:12px;">Continuous predictions</div>
+  {continuous.map(p => (
+    <div class="pred-row">
+      <span class="pred-action">{p.action}</span>
+      <span class="pred-prob">{p.value}</span>
+      <span class="pred-note">{p.note}</span>
+    </div>
+  ))}
+</div>
+
+<style>
+  .pred-wrap {
+    margin: 24px 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 0;
+    overflow-x: auto;
+  }
+  .pred-section-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+    padding: 4px 16px 6px;
+  }
+  .pred-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 16px;
+    font-size: 12px;
+    border-bottom: 1px solid var(--border);
+  }
+  .pred-row:last-child { border-bottom: none; }
+  .pred-row:hover { background: var(--tag-bg); }
+  .pred-action {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    width: 140px;
+    flex: none;
+  }
+  .pred-prob {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+    width: 60px;
+    flex: none;
+    text-align: right;
+  }
+  .pred-note {
+    font-size: 11px;
+    color: var(--text-secondary);
+    flex: 1;
+  }
+</style>

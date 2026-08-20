@@ -1,0 +1,33 @@
+---
+title: "Life of a Post: How X's Algorithm Decides What You See"
+date: 2026-08-20
+tags: ["systems", "ml", "infrastructure"]
+description: "Tracing a single post through X's open-source recommendation algorithm, from Kafka ingestion and LLM classification to transformer scoring and diversity reranking."
+---
+
+import PostJourney from '../../components/blog/x-algorithm/PostJourney.astro';
+import SamplePostIntro from '../../components/blog/x-algorithm/SamplePostIntro.astro';
+
+X open-sourced their For You feed algorithm in August 2026. With the help of Claude, I set out to understand how posts are shown on X's For You page. This is one post's journey from publish to feed.
+
+<SamplePostIntro />
+
+The system has two paths. The **labeling path** runs continuously when posts are published. The **request path** runs when someone opens their feed. They're decoupled: the labeling path writes labels to storage, the request path reads them. The LLM calls never block your feed load.
+
+Click through each step below to follow this post through the algorithm.
+
+<PostJourney />
+
+## What the numbers tell us
+
+**Following someone is the biggest score lever.** The 0.75x OON discount and the +15.0 bidirectional reply boost mean that a followed (and mutually-followed) author's post can score 2-3x higher than the same content from a stranger. The algorithm ranks relationships as much as posts. Try the toggle in Step 7 to see the difference.
+
+**Negative feedback weights are massive but probabilities are tiny.** Report weight is -234.0, but P(report) for a clean post is 0.00003. The product (-234 * 0.00003 = -0.007) barely moves the score. Mass reporting from bad actors primarily affects recommendations for users similar to the bad actors, not globally. Predictions are personalized.
+
+**Diversity reranking is real.** The DPP with theta=0.65 measurably changes the feed. Our sunset post moved 4 positions up because the algorithm actively trades score for variety. This is why you see that random nature photo between tech threads.
+
+**The safety pipeline is strictly separate from ranking.** 54 rules, evaluated in order, first-drop-wins. OON content faces 26 extra rules. The same post that's allowed to a follower can be dropped as a recommendation. Ranking decides where you appear; visibility decides whether you appear at all.
+
+**Phoenix doesn't count likes.** It predicts how likely *you* are to like a post based on your own engagement history. The same sunset photo gets a different P(favorite) for every viewer. The 1,024-action sequence fed to the 8-layer transformer is the entire signal. If you've been engaging with nature photography, your P(photo_expand) will be high. If you haven't, it won't.
+
+All scoring weights referenced above are from `home-mixer/params/param.rs` in X's [open-source repository](https://github.com/xai-org/x-algorithm), last synced from production on 2026-08-12. The predicted probabilities are illustrative. X does not publish the trained model weights.

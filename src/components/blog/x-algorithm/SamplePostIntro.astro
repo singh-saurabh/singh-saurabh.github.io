@@ -1,0 +1,138 @@
+---
+// Shows the sample post and viewer as formatted cards
+---
+
+<div class="spi-wrap">
+  <div class="spi-col">
+    <div class="spi-label">The Post</div>
+    <div class="spi-card">
+      <div class="spi-header">
+        <div class="spi-avatar">S</div>
+        <div>
+          <div class="spi-name">Sarah Chen</div>
+          <div class="spi-handle">@naturephotog &middot; 500 followers &middot; 2 months old</div>
+        </div>
+      </div>
+      <div class="spi-text">"Just watched an incredible sunset over the Pacific. The colors were unreal"</div>
+      <div class="spi-img"></div>
+      <div class="spi-meta">1 photo attached</div>
+    </div>
+  </div>
+  <div class="spi-arrow">
+    <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+      <line x1="5" y1="12" x2="19" y2="12"></line>
+      <polyline points="12 5 19 12 12 19"></polyline>
+    </svg>
+  </div>
+  <div class="spi-col">
+    <div class="spi-label">The Viewer</div>
+    <div class="spi-card">
+      <div class="spi-header">
+        <div class="spi-avatar spi-avatar-v">T</div>
+        <div>
+          <div class="spi-name">@techreader</div>
+          <div class="spi-handle">847 following &middot; Prefers nature & tech</div>
+        </div>
+      </div>
+      <div class="spi-relation">
+        <span class="spi-badge spi-badge-warn">Does NOT follow @naturephotog</span>
+      </div>
+      <div class="spi-meta">Can only see this post through out-of-network retrieval</div>
+    </div>
+  </div>
+</div>
+
+<style>
+  .spi-wrap {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 28px 0;
+  }
+  .spi-col { flex: 1; }
+  .spi-arrow {
+    flex: none;
+    color: var(--text-secondary);
+    opacity: 0.4;
+  }
+  .spi-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+  }
+  .spi-card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    background: var(--bg);
+  }
+  .spi-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+  }
+  .spi-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ff7e5f, #feb47b);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+    color: #fff;
+    flex: none;
+  }
+  .spi-avatar-v {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+  }
+  .spi-name {
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .spi-handle {
+    font-size: 12px;
+    color: var(--text-secondary);
+  }
+  .spi-text {
+    font-family: var(--font-serif);
+    font-size: 15px;
+    line-height: 1.5;
+    margin-bottom: 10px;
+    font-style: italic;
+  }
+  .spi-img {
+    width: 100%;
+    height: 80px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #1a1a3e, #2d1b69, #e94560, #ff9a3c, #ffd93d);
+    margin-bottom: 8px;
+  }
+  .spi-meta {
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+  .spi-relation {
+    margin-bottom: 8px;
+  }
+  .spi-badge {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 4px;
+  }
+  .spi-badge-warn {
+    background: rgba(239, 68, 68, 0.08);
+    color: #EF4444;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+  }
+  @media (max-width: 640px) {
+    .spi-wrap { flex-direction: column; }
+    .spi-arrow { transform: rotate(90deg); }
+  }
+</style>

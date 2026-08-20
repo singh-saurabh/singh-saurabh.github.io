@@ -1,0 +1,132 @@
+---
+const filters = [
+  { name: 'DropDuplicates', before: 2200, after: 2200, pass: true },
+  { name: 'CoreDataHydration', before: 2200, after: 2192, pass: true },
+  { name: 'AgeFilter (48h)', before: 2192, after: 2158, pass: true },
+  { name: 'SelfTweet', before: 2158, after: 2158, pass: true },
+  { name: 'OONRetweetReply', before: 2158, after: 2109, pass: true },
+  { name: 'OONNsfwSimclusters', before: 2109, after: 2102, pass: true },
+  { name: 'RetweetDedup', before: 2102, after: 2084, pass: true },
+  { name: 'Subscription', before: 2084, after: 2084, pass: true },
+  { name: 'PreviouslySeen (x3)', before: 2084, after: 1905, pass: true },
+  { name: 'MutedKeyword', before: 1905, after: 1900, pass: true },
+  { name: 'AuthorSocialgraph', before: 1900, after: 1873, pass: true },
+  { name: 'VideoFilter', before: 1873, after: 1873, pass: true },
+  { name: 'TopicIds', before: 1873, after: 1873, pass: true },
+  { name: 'NewUserEngagement', before: 1873, after: 1873, pass: true },
+  { name: 'InventoryHoldout (0%)', before: 1873, after: 1862, pass: true },
+];
+const maxW = 2200;
+const totalRemoved = 2200 - 1862;
+---
+
+<div class="funnel-wrap">
+  <div class="funnel-stats">
+    <div class="funnel-stat">
+      <span class="funnel-stat-num">{(2200).toLocaleString()}</span>
+      <span class="funnel-stat-label">Candidates in</span>
+    </div>
+    <div class="funnel-stat">
+      <span class="funnel-stat-num funnel-removed">{totalRemoved}</span>
+      <span class="funnel-stat-label">Removed</span>
+    </div>
+    <div class="funnel-stat">
+      <span class="funnel-stat-num">{(1862).toLocaleString()}</span>
+      <span class="funnel-stat-label">Survivors</span>
+    </div>
+  </div>
+  <div class="funnel-rows">
+    {filters.map(f => {
+      const removed = f.before - f.after;
+      const w = Math.max(f.after / maxW * 100, 2);
+      return (
+        <div class="funnel-row">
+          <span class="funnel-name">{f.name}</span>
+          <span class="funnel-bar-wrap">
+            <span class="funnel-bar" style={`width:${w}%`}></span>
+          </span>
+          <span class="funnel-count">{f.after.toLocaleString()}</span>
+          {removed > 0
+            ? <span class="funnel-badge funnel-badge-fail">-{removed}</span>
+            : <span class="funnel-badge funnel-badge-pass">&#10003;</span>
+          }
+        </div>
+      );
+    })}
+  </div>
+</div>
+
+<style>
+  .funnel-wrap {
+    margin: 24px 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  .funnel-stats {
+    display: flex;
+    gap: 16px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+  }
+  .funnel-stat-num {
+    font-family: var(--font-mono);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .funnel-removed { color: #EF4444; }
+  .funnel-stat-label {
+    display: block;
+    font-size: 11px;
+    color: var(--text-secondary);
+  }
+  .funnel-rows { padding: 8px 0; overflow-x: auto; }
+  .funnel-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 3px 16px;
+    font-size: 12px;
+  }
+  .funnel-row:hover { background: var(--tag-bg); }
+  .funnel-name {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    width: 160px;
+    flex: none;
+    text-align: right;
+    color: var(--text-secondary);
+  }
+  .funnel-bar-wrap {
+    flex: 1;
+    height: 14px;
+    min-width: 60px;
+  }
+  .funnel-bar {
+    height: 100%;
+    border-radius: 2px;
+    background: var(--accent);
+    opacity: 0.5;
+    min-width: 2px;
+  }
+  .funnel-count {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    width: 45px;
+    flex: none;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+  .funnel-badge {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    padding: 1px 5px;
+    border-radius: 4px;
+    flex: none;
+    width: 36px;
+    text-align: center;
+  }
+  .funnel-badge-pass { background: rgba(16,185,129,0.1); color: #10B981; }
+  .funnel-badge-fail { background: rgba(239,68,68,0.1); color: #EF4444; }
+</style>

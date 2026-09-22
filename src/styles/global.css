@@ -220,6 +220,10 @@ a {
   padding-left: 24px;
 }
 
+.prose ol {
+  list-style-type: decimal;
+}
+
 .prose li {
   margin-bottom: 8px;
 }

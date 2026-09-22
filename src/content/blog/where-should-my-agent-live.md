@@ -169,22 +169,22 @@ As cloud agents take on longer tasks and more parallel work, keeping your MacBoo
 
 ## References
 
-1. <span id="reference-1"></span> [OpenAI: Agents API architecture](https://developers.openai.com/api/docs/guides/agents-api/architecture). The hosted harness, application server, and optional environment.
-2. <span id="reference-2"></span> [Claude Code: How it works](https://code.claude.com/docs/en/how-claude-code-works). Local execution, sessions, tools, and the agent loop.
-3. <span id="reference-3"></span> [OpenAI: Codex CLI](https://learn.chatgpt.com/docs/codex/cli). Working against a local repository and installed tools.
-4. <span id="reference-4"></span> [Cursor: What we've learned building cloud agents](https://cursor.com/blog/cloud-agent-lessons). Development environments, durable execution, and conversation state.
-5. <span id="reference-5"></span> [Anthropic: How we contain Claude](https://www.anthropic.com/engineering/how-we-contain-claude). VM boundaries, startup failures, and credentials.
-6. <span id="reference-6"></span> [Anthropic: Scaling Managed Agents](https://www.anthropic.com/engineering/managed-agents). Separating session storage, the harness, and execution.
-7. <span id="reference-7"></span> [Devin: Outposts overview](https://docs.devin.ai/cloud/outposts/overview). A cloud agent loop with execution on customer-controlled machines.
-8. <span id="reference-8"></span> [Cognition: Bringing macOS to Devin](https://devin.ai/blog/devin-gets-a-mac). Mac VMs, disk snapshots, prepared tools, and native application verification.
-9. <span id="reference-9"></span> [Temporal: Activity idempotency](https://docs.temporal.io/activity-definition#idempotency). Why durable execution still needs safe retries.
-10. <span id="reference-10"></span> [OpenAI: Sandbox lifecycle](https://developers.openai.com/api/docs/guides/agents-api/environments/lifecycle). Reconnection, replacement compute, and cleanup.
-11. <span id="reference-11"></span> [Cognition: What We Learned Building Cloud Agents](https://cognition.com/blog/what-we-learned-building-cloud-agents). Machine snapshots, asynchronous work, and VM orchestration.
-12. <span id="reference-12"></span> [Cloudflare: Run Devin Outposts on Cloudflare](https://developers.cloudflare.com/sandbox/tutorials/devin-outposts/). Directory checkpoints and their recovery limits.
-13. <span id="reference-13"></span> [Amp: Orbs overview](https://ampcode.com/docs/orbs). Remote environments that keep working while your laptop is closed.
-14. <span id="reference-14"></span> [Cursor: Introducing Projects](https://cursor.com/blog/projects). Cloud execution, ongoing work, and delegation to thousands of subagents.
-15. <span id="reference-15"></span> [Cursor: Scaling long-running autonomous coding](https://cursor.com/blog/scaling-agents). Experiments with hundreds of concurrent agents and the challenges of coordinating them.
-16. <span id="reference-16"></span> [Cognition: Devin can now Manage Devins](https://cognition.com/blog/devin-can-now-manage-devins). Delegating tasks to separate sessions and VMs.
-17. <span id="reference-17"></span> [Cognition: Devin can now Schedule Devins](https://cognition.com/blog/devin-can-now-schedule-devins). Recurring sessions, retained notes, and parallel workers.
+1. <span id="reference-1"></span> [OpenAI: Agents API architecture](https://developers.openai.com/api/docs/guides/agents-api/architecture)
+2. <span id="reference-2"></span> [Claude Code: How it works](https://code.claude.com/docs/en/how-claude-code-works)
+3. <span id="reference-3"></span> [OpenAI: Codex CLI](https://learn.chatgpt.com/docs/codex/cli)
+4. <span id="reference-4"></span> [Cursor: What we've learned building cloud agents](https://cursor.com/blog/cloud-agent-lessons)
+5. <span id="reference-5"></span> [Anthropic: How we contain Claude](https://www.anthropic.com/engineering/how-we-contain-claude)
+6. <span id="reference-6"></span> [Anthropic: Scaling Managed Agents](https://www.anthropic.com/engineering/managed-agents)
+7. <span id="reference-7"></span> [Devin: Outposts overview](https://docs.devin.ai/cloud/outposts/overview)
+8. <span id="reference-8"></span> [Cognition: Bringing macOS to Devin](https://devin.ai/blog/devin-gets-a-mac)
+9. <span id="reference-9"></span> [Temporal: Activity idempotency](https://docs.temporal.io/activity-definition#idempotency)
+10. <span id="reference-10"></span> [OpenAI: Sandbox lifecycle](https://developers.openai.com/api/docs/guides/agents-api/environments/lifecycle)
+11. <span id="reference-11"></span> [Cognition: What We Learned Building Cloud Agents](https://cognition.com/blog/what-we-learned-building-cloud-agents)
+12. <span id="reference-12"></span> [Cloudflare: Run Devin Outposts on Cloudflare](https://developers.cloudflare.com/sandbox/tutorials/devin-outposts/)
+13. <span id="reference-13"></span> [Amp: Orbs overview](https://ampcode.com/docs/orbs)
+14. <span id="reference-14"></span> [Cursor: Introducing Projects](https://cursor.com/blog/projects)
+15. <span id="reference-15"></span> [Cursor: Scaling long-running autonomous coding](https://cursor.com/blog/scaling-agents)
+16. <span id="reference-16"></span> [Cognition: Devin can now Manage Devins](https://cognition.com/blog/devin-can-now-manage-devins)
+17. <span id="reference-17"></span> [Cognition: Devin can now Schedule Devins](https://cognition.com/blog/devin-can-now-schedule-devins)
 
 *Diagrams are simplified illustrations, not vendor deployment schematics.*

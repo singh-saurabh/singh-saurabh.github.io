@@ -1,0 +1,38 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="536" viewBox="0 0 600 536" role="img" aria-labelledby="title desc">
+  <title id="title">Three directions of sandbox network access</title>
+  <desc id="desc">Inbound: a reviewer connects to an app preview inside the sandbox, subject to authentication. Outbound: a sandbox test process connects to a package registry or test database under an outbound access policy. Between sandboxes: a worker connects to another sandbox only where direct links are supported and allowed. Otherwise, results need a separate handoff route.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0 L10 5 L0 10Z" fill="#6b625d"/></marker>
+  </defs>
+  <rect width="600" height="536" rx="16" fill="#fafaf8"/>
+  <g font-family="system-ui, -apple-system, sans-serif" fill="#292524">
+    <text x="28" y="39" font-size="23" font-weight="600">Check access in each direction</text>
+
+    <text x="28" y="85" font-size="18" font-weight="600" fill="#6b625d">INTO THE SANDBOX</text>
+    <rect x="24" y="103" width="224" height="72" rx="10" fill="#f5f5f4" stroke="#a8a29e" stroke-width="1.5"/>
+    <text x="136" y="147" text-anchor="middle" font-size="22" font-weight="600">Reviewer</text>
+    <path d="M259 139 H337" stroke="#6b625d" stroke-width="1.8" marker-end="url(#arrow)"/>
+    <rect x="352" y="103" width="224" height="72" rx="10" fill="#f0fdfa" stroke="#0f766e" stroke-width="1.5"/>
+    <text x="464" y="132" text-anchor="middle" font-size="21" font-weight="600" fill="#0f766e">Sandbox app</text>
+    <text x="464" y="159" text-anchor="middle" font-size="18" fill="#6b625d">Preview server</text>
+    <text x="300" y="201" text-anchor="middle" font-size="19" fill="#6b625d">Require authentication for private previews.</text>
+
+    <text x="28" y="246" font-size="18" font-weight="600" fill="#6b625d">OUT OF THE SANDBOX</text>
+    <rect x="24" y="264" width="224" height="72" rx="10" fill="#f0fdfa" stroke="#0f766e" stroke-width="1.5"/>
+    <text x="136" y="293" text-anchor="middle" font-size="21" font-weight="600" fill="#0f766e">Sandbox</text>
+    <text x="136" y="320" text-anchor="middle" font-size="18" fill="#6b625d">Test process</text>
+    <path d="M259 300 H337" stroke="#6b625d" stroke-width="1.8" marker-end="url(#arrow)"/>
+    <rect x="352" y="264" width="224" height="72" rx="10" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+    <text x="464" y="293" text-anchor="middle" font-size="20" font-weight="600" fill="#2563eb">Package registry</text>
+    <text x="464" y="320" text-anchor="middle" font-size="20" font-weight="600" fill="#2563eb">Test database</text>
+    <text x="300" y="362" text-anchor="middle" font-size="19" fill="#6b625d">Set destinations and protocols the task can reach.</text>
+
+    <text x="28" y="407" font-size="18" font-weight="600" fill="#6b625d">BETWEEN SANDBOXES</text>
+    <rect x="24" y="425" width="224" height="64" rx="10" fill="#f0fdfa" stroke="#0f766e" stroke-width="1.5"/>
+    <text x="136" y="465" text-anchor="middle" font-size="21" font-weight="600" fill="#0f766e">Sandbox worker</text>
+    <path d="M259 457 H337" stroke="#6b625d" stroke-width="1.8" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+    <rect x="352" y="425" width="224" height="64" rx="10" fill="#f0fdfa" stroke="#0f766e" stroke-width="1.5"/>
+    <text x="464" y="465" text-anchor="middle" font-size="21" font-weight="600" fill="#0f766e">Other sandbox</text>
+    <text x="300" y="517" text-anchor="middle" font-size="19" fill="#6b625d">Direct links only where supported and allowed.</text>
+  </g>
+</svg>

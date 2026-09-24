@@ -8,9 +8,13 @@ interface Props {
   title: string;
   description?: string;
   ogType?: string;
+  coverImage?: {
+    src: string;
+    alt: string;
+  };
 }
 
-const { title, description, ogType } = Astro.props;
+const { title, description, ogType, coverImage } = Astro.props;
 ---
 
 <!doctype html>
@@ -18,8 +22,11 @@ const { title, description, ogType } = Astro.props;
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
-    <SEO title={title} description={description} ogType={ogType} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" sizes="180x180" />
+    <meta name="theme-color" content="#2563eb" />
+    <SEO title={title} description={description} ogType={ogType} coverImage={coverImage} />
     <script is:inline>
       (function() {
         const stored = localStorage.getItem('theme');

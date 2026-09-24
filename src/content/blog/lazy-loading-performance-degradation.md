@@ -3,6 +3,9 @@ title: "Lazy loading isn't the magic pill to fix AI Inference"
 date: 2025-08-24
 tags: ["infrastructure", "systems"]
 description: "Why lazy loading container filesystems provides massive initial gains but degrades to modest 1.5-3x speedups when accounting for application startup and cache misses."
+coverImage:
+  src: "/images/social/lazy-loading-performance-degradation.jpg"
+  alt: "Blue wave slowed by a staggered field of glass blocks"
 ---
 
 Long cold starts are an incredibly common problem for AI/ML workloads running on Kubernetes. A cold start occurs when a new container instance must pull and load an entire image with no caching available to speed up the process.

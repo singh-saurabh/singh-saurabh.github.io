@@ -3,6 +3,9 @@ title: "Where should my Agent Live?"
 date: 2026-09-22
 tags: ["agents", "systems", "infrastructure"]
 description: "From a coding agent on your laptop to a cloud service: why the session, harness, and execution environment need different homes."
+coverImage:
+  src: "/images/social/where-should-my-agent-live.jpg"
+  alt: "Blue sphere among separated glass enclosures"
 ---
 
 The easiest way to put a coding agent in the cloud is to give it a computer. Start a VM, clone a repository, install Claude Code or Codex, and hand it a task. It looks a lot like running the same agent on your laptop.

@@ -3,6 +3,9 @@ title: "The decisions you need to make before choosing your agent sandbox"
 date: 2026-09-23
 tags: ["agents", "systems", "infrastructure"]
 description: "Choose an agent sandbox around four decisions: access, runtime, persistence, and where work and data can go."
+coverImage:
+  src: "/images/social/choosing-your-agent-sandbox.jpg"
+  alt: "Blue path branching through distinct architectural frames"
 ---
 
 You're building or integrating a cloud coding agent. Its sandbox is the isolated environment where it runs commands and edits files. Before comparing providers, answer four questions about the work it will do.

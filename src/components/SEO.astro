@@ -4,6 +4,10 @@ interface Props {
   description?: string;
   ogType?: string;
   canonicalUrl?: string;
+  coverImage?: {
+    src: string;
+    alt: string;
+  };
 }
 
 const {
@@ -11,10 +15,16 @@ const {
   description = 'Saurabh Singh — Founding engineer at TensorFuse, building Whip. Writing about mobile platforms, AI agents, and infrastructure.',
   ogType = 'website',
   canonicalUrl,
+  coverImage = {
+    src: '/images/social/site.jpg',
+    alt: 'Saurabh Singh personal engineering blog',
+  },
 } = Astro.props;
 
 const siteTitle = title === 'Saurabh Singh' ? title : `${title} | Saurabh Singh`;
-const canonical = canonicalUrl || Astro.url.href;
+const site = Astro.site ?? new URL('https://singh-saurabh.github.io');
+const canonical = new URL(canonicalUrl ?? Astro.url.pathname, site).href;
+const imageUrl = new URL(coverImage.src, site).href;
 ---
 
 <title>{siteTitle}</title>
@@ -25,7 +35,14 @@ const canonical = canonicalUrl || Astro.url.href;
 <meta property="og:description" content={description} />
 <meta property="og:type" content={ogType} />
 <meta property="og:url" content={canonical} />
+<meta property="og:image" content={imageUrl} />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:type" content="image/jpeg" />
+<meta property="og:image:alt" content={coverImage.alt} />
 
-<meta name="twitter:card" content="summary" />
+<meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={siteTitle} />
 <meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={imageUrl} />
+<meta name="twitter:image:alt" content={coverImage.alt} />

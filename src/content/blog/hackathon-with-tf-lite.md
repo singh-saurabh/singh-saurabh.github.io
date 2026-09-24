@@ -3,6 +3,9 @@ title: "Tuberculosis Detector with TFLite"
 date: 2019-03-08
 tags: ["ml"]
 description: "Building a tuberculosis detector with a modified VGG-16 model and deploying it on Android with TFLite at the PanIIT hackathon."
+coverImage:
+  src: "/images/social/hackathon-with-tf-lite.jpg"
+  alt: "Delicate branching blue forms compressed into a small translucent tile"
 ---
 
 *During the PanIIT hackathon, me and my team made a tuberulosis detector trained on a slightly modified vgg-16 and we ran it on an Android phone using tflite. This is how we did it.*

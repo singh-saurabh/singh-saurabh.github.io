@@ -3,6 +3,9 @@ title: "The storage story: what your agent sandbox gives you"
 date: 2026-09-23
 tags: ["agents", "systems", "infrastructure", "storage"]
 description: "A sandbox gives your agent a filesystem. What survives sleep, replacement, or a second agent depends on a separate storage contract."
+coverImage:
+  src: "/images/social/agent-sandbox-storage.jpg"
+  alt: "Stacked translucent layers around a blue core"
 ---
 
 A bug-fixing agent edits three files, installs a package, runs tests, and starts a preview server. It waits overnight while you review the change. What will still be there tomorrow?

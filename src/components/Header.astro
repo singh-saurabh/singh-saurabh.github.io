@@ -8,11 +8,12 @@ const pathname = Astro.url.pathname;
   <div style="max-width:640px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between;">
     <a
       href="/"
-      style="font-weight:700;font-size:15px;letter-spacing:-0.01em;color:var(--text);text-decoration:none;"
+      class="brand"
     >
-      saurabh singh
+      <img src="/favicon.svg" width="28" height="28" alt="" aria-hidden="true" />
+      <span>saurabh singh</span>
     </a>
-    <nav style="display:flex;align-items:center;gap:24px;" aria-label="Main navigation">
+    <nav class="main-nav" aria-label="Main navigation">
       <a
         href="/"
         style={`font-size:14px;font-weight:500;text-decoration:none;transition:color 0.15s;color:${pathname === '/' ? 'var(--text)' : 'var(--text-secondary)'};`}
@@ -29,3 +30,14 @@ const pathname = Astro.url.pathname;
     </nav>
   </div>
 </header>
+
+<style>
+  .brand { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 15px; letter-spacing: -0.01em; color: var(--text); text-decoration: none; white-space: nowrap; }
+  .brand img { display: block; flex: none; }
+  .main-nav { display: flex; align-items: center; gap: 24px; }
+  @media (max-width: 400px) {
+    .brand { gap: 7px; font-size: 14px; }
+    .brand img { width: 24px; height: 24px; }
+    .main-nav { gap: 14px; }
+  }
+</style>

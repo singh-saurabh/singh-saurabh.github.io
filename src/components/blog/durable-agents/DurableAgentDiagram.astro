@@ -1,0 +1,156 @@
+---
+interface Props {
+  kind: 'architecture' | 'workflow' | 'uncertainty';
+}
+const { kind } = Astro.props;
+const completed = [
+  ['Inspect the failure', 'Understand what broke.'],
+  ['Prepare a patch', 'Save the changed files.'],
+  ['Run tests', 'Save the result for this patch.'],
+  ['Start CI', 'Record the returned job ID.'],
+];
+---
+
+<figure class:list={['agent-diagram', kind]} aria-labelledby={`${kind}-caption`}>
+  {kind === 'architecture' && (
+    <>
+      <div class="architecture-map">
+        <div class="control-row">
+          <div class="node"><strong>Session</strong><span>History of the work</span></div>
+          <div class="exchange" aria-label="Reads and writes">↔</div>
+          <div class="node harness"><strong>Harness</strong><span>Runs the agent loop</span></div>
+          <div class="exchange" aria-label="Requests and responses">↔</div>
+          <div class="node"><strong>Model</strong><span>Reasons over context</span></div>
+        </div>
+        <div class="tool-link"><span class="stem" aria-hidden="true"></span><span>Tool calls &amp; results</span><span class="stem" aria-hidden="true"></span></div>
+        <div class="destinations">
+          <div class="node sandbox"><span class="boundary-label">Separate execution environment</span><strong>Sandbox</strong><span>Files · shell · test processes</span></div>
+          <div class="node"><strong>External services</strong><span>CI · search · other APIs</span></div>
+        </div>
+      </div>
+      <figcaption id="architecture-caption">The harness coordinates the work. Tools can reach a separate sandbox or a remote service. This is one possible arrangement. <a href="#reference-2">[2]</a> <a href="#reference-3">[3]</a></figcaption>
+    </>
+  )}
+
+  {kind === 'workflow' && (
+    <>
+      <div class="workflow-map">
+        <div class="phase-label">Original worker</div>
+        <ol class="steps completed">
+          {completed.map(([title, detail], index) => (
+            <li><span class="step-number" aria-hidden="true">{index + 1}</span><div><strong>{title}</strong><span>{detail}</span></div><span class="step-status" aria-label="Completed">✓</span></li>
+          ))}
+        </ol>
+        <div class="saved-record"><span class="record-icon" aria-hidden="true">✓</span><div><strong>Progress saved outside the worker</strong><span>Patch + test result + CI job ID</span></div></div>
+        <div class="interruption"><span class="break-symbol" aria-hidden="true">×</span><div><strong>Worker stops while waiting</strong><span>The saved progress survives.</span></div></div>
+        <div class="phase-label recovery-label">Replacement worker <span>loads saved progress</span></div>
+        <ol class="steps resumed" start="5">
+          <li><span class="step-number" aria-hidden="true">5</span><div><strong>Wait for CI</strong><span>Check the existing job using its saved ID.</span></div></li>
+          <li><span class="step-number" aria-hidden="true">6</span><div><strong>Report the result</strong><span>Continue the same task.</span></div></li>
+        </ol>
+      </div>
+      <figcaption id="workflow-caption">Resume from recorded progress. In this example, the application explicitly saves the patch, test result, and CI job ID. <a href="#reference-13">[13]</a></figcaption>
+    </>
+  )}
+
+  {kind === 'uncertainty' && (
+    <>
+      <div class="uncertainty-map">
+        <div class="request"><span>Agent requests a CI job</span><span aria-hidden="true">↓</span></div>
+        <div class="two-worlds">
+          <div class="world remote"><span class="world-label">At the remote service</span><strong>Job created</strong><span>The action happened.</span></div>
+          <div class="world history"><span class="world-label">In the saved workflow</span><strong>No job ID</strong><span>Success is not recorded.</span></div>
+        </div>
+        <div class="lost-response"><span aria-hidden="true">×</span><strong>Worker dies before saving the response</strong></div>
+        <div class="recovery-question"><strong>Recovery sees an uncertain outcome</strong><span>A blind retry could start a second job. Use a stable operation key or reconcile with the remote service.</span></div>
+      </div>
+      <figcaption id="uncertainty-caption">An external action and the workflow’s record of it can disagree. Durable execution alone cannot close this gap. <a href="#reference-19">[19]</a> <a href="#reference-20">[20]</a></figcaption>
+    </>
+  )}
+</figure>
+
+<style>
+  .agent-diagram {
+    --saved: #187052;
+    --failure: #b33c32;
+    margin: 32px 0;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  :global([data-theme="dark"]) .agent-diagram { --saved: #74cbaa; --failure: #f5958b; }
+  .agent-diagram strong { display: block; font-family: var(--font-sans); font-size: 14px; line-height: 1.5; font-weight: 650; color: var(--text); }
+  .agent-diagram figcaption { padding: 16px 20px; border-top: 1px solid var(--border); font-size: 12px; line-height: 1.65; color: var(--text-secondary); }
+  .agent-diagram figcaption a { color: var(--accent); white-space: nowrap; }
+  .architecture-map { padding: 28px 20px; }
+  .control-row { display: grid; grid-template-columns: 1fr 22px 1.15fr 22px 1fr; align-items: center; }
+  .node { min-width: 0; padding: 16px 10px; text-align: center; border: 1px solid var(--border); border-radius: 8px; background: var(--bg); }
+  .node > span { display: block; color: var(--text-secondary); font-size: 12px; margin-top: 4px; }
+  .node.harness { border: 1.5px solid var(--accent); background: color-mix(in srgb, var(--accent) 5%, var(--bg)); }
+  .node.harness strong { color: var(--accent); }
+  .exchange { text-align: center; color: var(--text-secondary); font-size: 19px; }
+  .tool-link { display: flex; flex-direction: column; align-items: center; color: var(--text-secondary); font-size: 12px; gap: 5px; }
+  .stem { width: 1px; height: 16px; background: var(--text-secondary); }
+  .destinations { display: grid; grid-template-columns: 1.2fr 1fr; gap: 18px; position: relative; padding-top: 16px; }
+  .destinations::before { content: ''; position: absolute; top: 0; height: 16px; left: 26%; right: 23%; border: 1px solid var(--text-secondary); border-bottom: none; }
+  .node.sandbox { border-style: dashed; border-color: var(--text-secondary); }
+  .node .boundary-label { font-size: 10px; margin: 0 0 6px; }
+  .workflow-map { padding: 24px; }
+  .phase-label { font-size: 12px; font-weight: 650; color: var(--text-secondary); margin-bottom: 14px; }
+  .agent-diagram .steps { list-style: none; margin: 0; padding: 0; font-family: var(--font-sans); font-size: 14px; line-height: 1.5; }
+  .agent-diagram .steps li { display: flex; align-items: flex-start; gap: 14px; position: relative; margin: 0; padding: 0 0 20px; }
+  .steps li:not(:last-child)::before { content: ''; position: absolute; left: 13px; top: 28px; bottom: 0; width: 1px; background: var(--border); }
+  .step-number { width: 28px; height: 28px; flex: 0 0 28px; display: grid; place-items: center; border: 1px solid var(--border); border-radius: 50%; font-size: 12px; font-weight: 600; }
+  .completed .step-number { color: var(--saved); border-color: color-mix(in srgb, var(--saved) 35%, var(--border)); }
+  .steps li > div { flex: 1; min-width: 0; }
+  .steps li > div > span { display: block; font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+  .step-status { color: var(--saved); font-size: 16px; padding-top: 2px; }
+  .saved-record { display: flex; align-items: center; gap: 12px; border: 1px solid color-mix(in srgb, var(--saved) 40%, var(--border)); border-radius: 8px; padding: 12px 14px; background: color-mix(in srgb, var(--saved) 5%, var(--bg)); }
+  .saved-record strong { font-size: 12px; color: var(--saved); }
+  .saved-record div > span { display: block; font-size: 12px; color: var(--text-secondary); margin-top: 3px; }
+  .record-icon { color: var(--saved); font-size: 18px; }
+  .interruption { margin: 22px 0; padding: 14px 0; border-top: 1px dashed color-mix(in srgb, var(--failure) 50%, var(--border)); border-bottom: 1px dashed color-mix(in srgb, var(--failure) 50%, var(--border)); display: flex; gap: 12px; align-items: center; }
+  .break-symbol { font-size: 25px; color: var(--failure); width: 28px; text-align: center; }
+  .interruption strong { font-size: 13px; color: var(--failure); }
+  .interruption div > span { display: block; font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+  .recovery-label { color: var(--accent); }
+  .recovery-label > span { display: block; font-weight: 400; margin-top: 2px; color: var(--text-secondary); }
+  .resumed .step-number { color: var(--accent); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 5%, var(--bg)); }
+  .agent-diagram .resumed li:last-child { padding-bottom: 0; }
+  .uncertainty-map { padding: 24px; }
+  .request { display: flex; flex-direction: column; align-items: center; gap: 8px; font-weight: 600; margin-bottom: 12px; }
+  .request > span:last-child { font-size: 20px; font-weight: 400; color: var(--text-secondary); }
+  .two-worlds { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .world { border-top: 2px solid var(--saved); background: var(--tag-bg); padding: 16px; }
+  .world.history { border-color: var(--failure); }
+  .world-label { display: block; font-size: 11px; color: var(--text-secondary); margin-bottom: 12px; }
+  .world strong { font-size: 18px; }
+  .remote strong { color: var(--saved); }
+  .history strong { color: var(--failure); }
+  .world > span:last-child { display: block; font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+  .lost-response { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 16px 0; }
+  .lost-response > span { color: var(--failure); font-size: 24px; }
+  .lost-response strong { color: var(--failure); font-size: 12px; }
+  .recovery-question { border-top: 1px solid var(--border); padding-top: 16px; }
+  .recovery-question > span { display: block; font-size: 12px; color: var(--text-secondary); margin-top: 6px; }
+  @media (max-width: 520px) {
+    .architecture-map, .workflow-map, .uncertainty-map { padding: 20px 16px; }
+    .control-row { grid-template-columns: 1fr 18px 1.15fr 18px 1fr; }
+    .control-row .node { padding: 12px 4px; }
+    .control-row strong { font-size: 13px; }
+    .control-row .node > span { font-size: 11px; }
+    .destinations { gap: 10px; grid-template-columns: 1fr 1fr; }
+    .destinations::before { left: 25%; right: 25%; }
+    .node { padding: 12px 8px; }
+    .control-row .node > span { margin-top: 2px; }
+    .two-worlds { gap: 10px; }
+    .world { padding: 12px 10px; }
+    .world strong { font-size: 16px; }
+    .agent-diagram figcaption { padding: 14px 16px; }
+  }
+</style>

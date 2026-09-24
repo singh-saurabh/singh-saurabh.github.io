@@ -1,0 +1,178 @@
+---
+title: "Everyone wants Durable Agents"
+date: 2026-09-24
+tags: ["agents", "systems", "infrastructure"]
+description: "What survives when a cloud agent fails? A look at harness hosting, durable execution, durable sessions, and the work recovery still leaves to you."
+---
+
+import DurableAgentDiagram from '../../components/blog/durable-agents/DurableAgentDiagram.astro';
+import BlogComparisonTable from '../../components/blog/durable-agents/BlogComparisonTable.astro';
+
+You ask a cloud agent to fix a bug. It edits a few files, runs tests, and starts a CI job. Then the machine running the agent disappears.
+
+When you come back, what should happen? Ideally, the agent still has your request, knows which changes it made, and can check the CI job it already started. You shouldn't have to explain the task again.
+
+That expectation sits behind the promise of a **durable agent**. But several things need to survive, and they don't all survive in the same way. A saved conversation, a recoverable workflow, and a restored filesystem solve different parts of the problem.
+
+In [Where should my Agent Live?](/blog/where-should-my-agent-live/), I looked at separating the agent loop from the machine executing its commands. This time, let's look at what happens when those pieces fail, and what it takes to continue the work.
+
+## What is running when an agent works?
+
+### The harness runs the loop
+
+I find it useful to keep the pieces visible:
+
+**Agent = Harness + Model (the brain) + Tools + Session + Execution environment.**
+
+The **model** reasons over the context it receives. The **harness** prepares that context, calls the model, routes tool requests, and decides how the loop continues. **Tools** let the agent do things: read a file, run a test, or call an external service. The **session** records the interaction. The **environment**, often an isolated sandbox, provides the files and processes the task needs. This follows the separation described by Anthropic and OpenAI. [[1]](#reference-1) [[2]](#reference-2)
+
+At the level of a single call, the model takes an input and generates an output. That output might be an answer, or a structured request to use a tool. A request to run tests still needs software to execute it. The harness supplies the available tool definitions, receives the model's request, calls the appropriate tool, and returns its result to the model as input for the next call. In our example, the model might request a test run; the harness runs it in the sandbox and feeds back the output so the model can decide what to do next. [[24]](#reference-24)
+
+The harness keeps these calls moving through a **reason–act–observe loop**, often described as a ReAct-style loop: reason about the task, take an action, observe the result, and repeat. ReAct introduced this pattern of interleaving reasoning and actions. The harness also manages the context supplied on each turn: instructions, conversation history, and tool results. As the history grows, it can select relevant events, trim old tool output, or compact earlier material into a summary. These are harness responsibilities around the model calls. [[25]](#reference-25) [[1]](#reference-1)
+
+### The sandbox provides the workspace
+
+A sandbox provider gives the agent a place to execute code. A harness host operates the loop that manages the work. One company can provide both, but these are separate responsibilities.
+
+Cloudflare shows the boundary directly: an agent runs in a Worker isolate and calls a separate Sandbox container for shell commands and file operations. Agent state can hold progress while the sandbox holds the workspace. [[3]](#reference-3)
+
+<DurableAgentDiagram kind="architecture" />
+
+Not every agent needs its own sandbox. An agent that only calls remote APIs may have no shell or local workspace. OpenAI's Agents API explicitly supports running without an execution environment. [[2]](#reference-2)
+
+For our bug-fixing agent, though, the environment matters. Remembering that it edited a file is useful only if the edit can be recovered too. When the machine disappears, we need to recover both the agent's progress and the work it left behind.
+
+## What needs to survive a failure?
+
+### Durable execution preserves progress
+
+**Durable execution means recording enough progress outside the running process to recover the computation after an interruption.** A durable workflow engine coordinates that recovery: the application defines the steps, and the engine records progress and manages when work should resume or retry. [[12]](#reference-12) [[13]](#reference-13)
+
+Consider this simplified workflow for our agent:
+
+<DurableAgentDiagram kind="workflow" />
+
+Suppose the patch and test results have been saved, and the workflow has recorded the CI job identifier. If the worker dies while waiting, a replacement can recover that identifier and check the existing job. It doesn't need to ask the model to rediscover the bug or start another CI run.
+
+That is an illustrative application of durable steps, rather than a claim that installing a workflow engine automatically saves patches or CI identifiers. The application must put the right operations and results inside the recovery contract. [[13]](#reference-13)
+
+Companies like Temporal and Inngest provide infrastructure for this, with different execution models. Temporal separates **workflows**, which coordinate work, from **activities**, which perform external operations. Its workflow code must remain compatible with recorded history so it can replay; non-deterministic work, including LLM calls, belongs in activities. Inngest instead describes recovery in terms of durable steps whose saved results are reused on subsequent execution. [[15]](#reference-15) [[13]](#reference-13)
+
+A recorded result can be reused; work without a recorded completion may need another attempt under the system's retry rules. Where you draw those boundaries matters. If the entire agent is one retryable operation, a retry can repeat that whole operation. Recovering individual model or tool calls requires finer durable boundaries or recovery implemented inside that operation. [[12]](#reference-12) [[16]](#reference-16) [[19]](#reference-19)
+
+The benefit is practical: less completed work to repeat and a way to wait across process lifetimes. Temporal workers can discard a blocked workflow from memory and reconstruct it on the same or another worker when work becomes available. The original process does not have to sit alive throughout the wait. [[14]](#reference-14)
+
+Nor does it need one unlimited execution history. Temporal limits the history of a workflow run and provides Continue-As-New to move into a fresh history. Long-lived workflows also need a code-versioning strategy so that recovery remains compatible with past events. [[22]](#reference-22) [[23]](#reference-23) [[15]](#reference-15)
+
+### Durable sessions preserve the interaction
+
+**A durable agent session preserves the continuity of the interaction across connections and execution attempts.** I use the term here for the saved identity and history of the work, together with the state needed to continue it. The exact contents depend on the product.
+
+Execution state answers “which step is pending?” Session history answers “what did we ask, what did the agent observe, and what has it told us?” LangSmith exposes this distinction through threads, runs, and execution checkpoints. It separately stores longer-term memory shared across conversations. [[9]](#reference-9)
+
+Anthropic keeps its session event log outside the harness. If the harness fails, a replacement can load that history. The history also exists separately from the model's current context window, so compaction needn't erase the original record. [[1]](#reference-1)
+
+Suppose you close the browser while our agent waits for CI. When you reopen it, the interface should recover the messages you missed and show the current run. Google describes sequence-based backfill in Agent Executor; Cursor describes a conversation stream that also accounts for retried partial output. [[21]](#reference-21) [[18]](#reference-18)
+
+The same session can span multiple processes. AWS makes that distinction explicit: an AgentCore session can remain valid after its compute stops, with new compute provisioned on a later invocation. [[10]](#reference-10)
+
+### Workspace recovery restores the working state
+
+Our agent also needs the patch it wrote. A saved conversation or a pending workflow step does not supply the changed files. In AgentCore, files survive a compute replacement only through the relevant persistence configuration. A sandbox API such as E2B supplies another part of the problem: documented filesystem and memory preservation on pause. [[10]](#reference-10) [[11]](#reference-11)
+
+A memory snapshot has limits too. E2B preserves files and process memory when pausing, but network clients must reconnect after resuming. A restored process still has to deal with services outside its machine. [[11]](#reference-11)
+
+Cursor's cloud agents illustrate how these pieces can fit together. Cursor reports using Temporal for its agent loop's failure handling and retries, while keeping machine state and conversation storage separate. The workflow can outlive a particular machine, but recovering the complete agent still depends on those other systems. [[18]](#reference-18)
+
+## Can the agent safely continue?
+
+### Did the external action happen?
+
+So far, our example has assumed the CI job ID was safely recorded. Now move the failure a little earlier:
+
+<DurableAgentDiagram kind="uncertainty" />
+
+Should the system retry? It might create a second job. Should it skip the operation? The first request might have failed before reaching the service.
+
+An activity can complete an external action and fail before reporting completion. A retry can repeat the effect. **Idempotency** addresses this by making repeated attempts have the same intended effect as one attempt. Temporal documents this failure window and the need to account for it. [[19]](#reference-19)
+
+Where the destination supports it, use a stable operation key so it can recognize duplicates. Where it doesn't, recovery may need to query the remote system and reconcile the outcome. AWS's durable execution guidance distinguishes retry semantics from external deduplication; limiting attempts alone doesn't tell the application what happened remotely. [[20]](#reference-20)
+
+This is why “durable” needs a boundary. The workflow can reliably preserve its own records while still having an uncertain view of an external action.
+
+### The recovered records have to agree
+
+Even when the individual records survive, we need to check that they describe the same work. If a workflow remembers that tests passed for a patch, but the restored workspace predates that patch, it cannot treat those results as verification of the current files. For this example, I would retain the patch or revision identity with the test result and verify what was restored.
+
+That gives us a stronger recovery test for our agent: restore the patch, match the saved test results to it, recover or reconcile the CI job ID, and make the session show where the task now stands.
+
+### What providers handle—and what you still need to verify
+
+With those requirements in view, the hosting options are easier to compare. There are two ways to buy harness hosting: configure a harness the provider supplies, or deploy your own agent code onto managed infrastructure. Claude Managed Agents follows the first approach; Blaxel's Agents Hosting follows the second. [[4]](#reference-4) [[5]](#reference-5)
+
+Here are some of the managed offerings, as documented in September 2026. This is a map of the components they supply; it does not establish that each one provides the complete recovery behavior described above.
+
+<BlogComparisonTable label="Managed agent hosting offerings">
+
+| Offering | What you get |
+| --- | --- |
+| **OpenAI Agents API** | A managed Codex harness and session, with an optional hosted or customer-supplied execution environment. [[2]](#reference-2) |
+| **Claude Managed Agents** | A configurable Claude harness and managed infrastructure, with cloud or self-hosted sandbox options. Currently Beta. [[4]](#reference-4) |
+| **Cloudflare Agents** | A runtime for your own harness or Project Think, with separate Sandbox tools. [[3]](#reference-3) [[6]](#reference-6) |
+| **Databricks** | Apps for deploying custom agents, plus managed Omnigent for coordinating existing harnesses. Omnigent is Beta; its agents run on a selected host, including Databricks Sandbox. [[7]](#reference-7) [[8]](#reference-8) |
+| **LangSmith Deployment** | Agent hosting with threads, runs, streaming, and execution checkpoints managed by Agent Server. [[9]](#reference-9) |
+| **AWS AgentCore Runtime** | Managed session compute. Its documentation separates the logical session from the compute that can stop and later be replaced. [[10]](#reference-10) |
+| **Blaxel Agents Hosting** | Managed endpoints for your own Python or TypeScript agent application. [[5]](#reference-5) |
+
+</BlogComparisonTable>
+
+These aren't equivalent packages. With Databricks Omnigent, for example, separating the coordination server from an execution host doesn't establish that the underlying coding harness runs outside the sandbox. The host still executes the agent. [[8]](#reference-8)
+
+Hosting the workflow service and running the application code are also separate responsibilities. For example, Temporal Cloud's standard service coordinates work while your workers execute your code; its Serverless Workers integrations add invocation and scaling on supported platforms. The agent implementation and execution environment still need to be supplied. [[14]](#reference-14) [[17]](#reference-17)
+
+For our agent, I would test each failure separately:
+
+<BlogComparisonTable label="Failures and recovery requirements">
+
+| What failed? | What recovery needs |
+| --- | --- |
+| The browser connection | Saved events and a way to retrieve missed output. [[21]](#reference-21) |
+| The workflow worker | Recorded execution progress and compatible code to reconstruct it. [[12]](#reference-12) [[15]](#reference-15) |
+| The sandbox | Recoverable files and a way to restart or restore required processes. [[10]](#reference-10) [[11]](#reference-11) |
+| An external action's response | Deduplication or a way to resolve its uncertain outcome. [[19]](#reference-19) [[20]](#reference-20) |
+
+</BlogComparisonTable>
+
+The field is still evolving. Some providers offer more control over the implementation; others take more of the agent loop and infrastructure off your hands. The competition is over how much of this recovery they can make work reliably, and how much you still need to build yourself.
+
+For our bug-fixing agent, the test is concrete: interrupt the work, come back, recover the actual patch, find the existing CI job, and continue. Check the files, the pending operation, and the visible history. Then check whether an action ran twice.
+
+## References
+
+1. <span id="reference-1"></span> [Anthropic: Scaling Managed Agents](https://www.anthropic.com/engineering/managed-agents)
+2. <span id="reference-2"></span> [OpenAI: Agents API architecture](https://developers.openai.com/api/docs/guides/agents-api/architecture)
+3. <span id="reference-3"></span> [Cloudflare: Sandbox tools for agents](https://developers.cloudflare.com/agents/tools/sandbox/)
+4. <span id="reference-4"></span> [Anthropic: Claude Managed Agents overview](https://platform.claude.com/docs/en/managed-agents/overview)
+5. <span id="reference-5"></span> [Blaxel: Agents Hosting](https://docs.blaxel.ai/Agents/Overview)
+6. <span id="reference-6"></span> [Cloudflare: Harnesses](https://developers.cloudflare.com/agents/harnesses/)
+7. <span id="reference-7"></span> [Databricks: Author and deploy an agent on Apps](https://docs.databricks.com/aws/en/agents/custom-agents/author-agent)
+8. <span id="reference-8"></span> [Databricks: Omnigent quickstart and host selection](https://docs.databricks.com/aws/en/omnigent/quickstart)
+9. <span id="reference-9"></span> [LangChain: Agent Server](https://docs.langchain.com/langsmith/agent-server)
+10. <span id="reference-10"></span> [AWS: AgentCore Runtime sessions](https://docs.aws.amazon.com/bedrock-agentcore/latest/devguide/runtime-sessions.html)
+11. <span id="reference-11"></span> [E2B: Sandbox persistence](https://docs.e2b.dev/sandbox/persistence)
+12. <span id="reference-12"></span> [Temporal: Workflow execution and replay](https://docs.temporal.io/workflow-execution)
+13. <span id="reference-13"></span> [Inngest: How functions execute](https://www.inngest.com/docs/learn/how-functions-are-executed)
+14. <span id="reference-14"></span> [Temporal: Workers](https://docs.temporal.io/workers)
+15. <span id="reference-15"></span> [Temporal: Workflow determinism and versioning](https://docs.temporal.io/workflow-definition)
+16. <span id="reference-16"></span> [Temporal: Retry policies](https://docs.temporal.io/encyclopedia/retry-policies)
+17. <span id="reference-17"></span> [Temporal: Serverless Workers](https://docs.temporal.io/serverless-workers)
+18. <span id="reference-18"></span> [Cursor: What we've learned building cloud agents](https://cursor.com/blog/cloud-agent-lessons)
+19. <span id="reference-19"></span> [Temporal: Activity granularity and idempotency](https://docs.temporal.io/activity-definition#idempotency)
+20. <span id="reference-20"></span> [AWS: Idempotency and retries](https://docs.aws.amazon.com/durable-execution/patterns/best-practices/idempotency/)
+21. <span id="reference-21"></span> [Google: Agent Executor](https://cloud.google.com/blog/products/ai-machine-learning/agent-executor-googles-distributed-agent-runtime)
+22. <span id="reference-22"></span> [Temporal: System limits](https://docs.temporal.io/evaluate/cloud/limits)
+23. <span id="reference-23"></span> [Temporal: Continue-As-New](https://docs.temporal.io/workflow-execution/continue-as-new)
+24. <span id="reference-24"></span> [Anthropic: Tool use with Claude](https://platform.claude.com/docs/en/agents-and-tools/tool-use/overview)
+25. <span id="reference-25"></span> [Yao et al.: ReAct — Synergizing Reasoning and Acting in Language Models](https://arxiv.org/abs/2210.03629)
+
+*The failure scenarios are illustrative. Product capabilities reflect documentation reviewed on 24 September 2026.*

@@ -1,14 +1,22 @@
 ---
 import BaseLayout from './BaseLayout.astro';
+import PostOutline from '../components/PostOutline.astro';
+
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
 
 interface Props {
   title: string;
   date: Date;
   tags: string[];
   description: string;
+  headings: Heading[];
 }
 
-const { title, date, tags, description } = Astro.props;
+const { title, date, tags, description, headings } = Astro.props;
 
 const formattedDate = date.toLocaleDateString('en-US', {
   year: 'numeric',
@@ -18,7 +26,9 @@ const formattedDate = date.toLocaleDateString('en-US', {
 ---
 
 <BaseLayout title={title} description={description} ogType="article">
-  <article style="max-width:640px;margin:0 auto;padding:0 24px;">
+  <div class="post-layout">
+    <div class="post-outline-rail"><PostOutline headings={headings} /></div>
+    <article>
     <div style="padding:56px 0 40px;">
       <h1 style={`font-size:clamp(24px, 5vw, 34px);font-weight:700;letter-spacing:-0.03em;line-height:1.2;margin-bottom:16px;`}>
         {title}
@@ -52,5 +62,50 @@ const formattedDate = date.toLocaleDateString('en-US', {
       </svg>
       Back to all posts
     </a>
-  </article>
+    </article>
+  </div>
 </BaseLayout>
+
+<style>
+  article {
+    box-sizing: border-box;
+    margin: 0 auto;
+    max-width: 640px;
+    padding: 0 24px;
+    width: 100%;
+  }
+
+  .post-outline-rail {
+    display: none;
+  }
+
+  :global(.prose h2),
+  :global(.prose h3) {
+    scroll-margin-top: 96px;
+  }
+
+  @media (min-width: 1200px) {
+    .post-layout {
+      column-gap: 40px;
+      display: grid;
+      grid-template-columns: 200px 640px 200px;
+      justify-content: center;
+    }
+
+    article {
+      grid-column: 2;
+      margin: 0;
+      max-width: none;
+    }
+
+    .post-outline-rail {
+      align-self: start;
+      display: block;
+      grid-column: 1;
+      grid-row: 1;
+      padding-top: 112px;
+      position: sticky;
+      top: 0;
+    }
+  }
+</style>

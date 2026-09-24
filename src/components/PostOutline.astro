@@ -1,0 +1,170 @@
+---
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface OutlineItem extends Heading {
+  children: Heading[];
+}
+
+interface Props {
+  headings: Heading[];
+}
+
+const { headings } = Astro.props;
+const items: OutlineItem[] = [];
+let currentSection: OutlineItem | undefined;
+
+for (const heading of headings) {
+  if (heading.depth === 2) {
+    currentSection = { ...heading, children: [] };
+    items.push(currentSection);
+  } else if (heading.depth === 3 && currentSection) {
+    currentSection.children.push(heading);
+  } else if (heading.depth === 3) {
+    items.push({ ...heading, children: [] });
+  }
+}
+---
+
+{items.length > 0 && (
+  <aside class="post-outline" data-post-outline aria-label="On this page">
+    <p>On this page</p>
+    <nav aria-label="On this page">
+      <ul>
+        {items.map((item) => (
+          <li>
+            <a href={`#${item.slug}`} data-outline-link>{item.text}</a>
+            {item.children.length > 0 && (
+              <ul>
+                {item.children.map((child) => (
+                  <li><a href={`#${child.slug}`} data-outline-link>{child.text}</a></li>
+                ))}
+              </ul>
+            )}
+          </li>
+        ))}
+      </ul>
+    </nav>
+  </aside>
+)}
+
+<style>
+  .post-outline {
+    color: var(--text-secondary);
+    font-family: var(--font-sans);
+    font-size: 12px;
+    line-height: 1.45;
+    max-height: calc(100vh - 128px);
+    overflow-y: auto;
+    padding-right: 12px;
+    scrollbar-width: thin;
+  }
+
+  .post-outline p {
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    margin: 0 0 12px;
+  }
+
+  .post-outline ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .post-outline ul ul {
+    margin-top: 4px;
+    padding-left: 12px;
+  }
+
+  .post-outline li + li {
+    margin-top: 5px;
+  }
+
+  .post-outline a {
+    color: inherit;
+    display: block;
+    overflow-wrap: anywhere;
+    text-decoration: none;
+  }
+
+  .post-outline a:hover,
+  .post-outline a.is-active {
+    color: var(--accent);
+  }
+
+  .post-outline a:focus-visible {
+    border-radius: 2px;
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+  }
+</style>
+
+<script>
+  const outline = document.querySelector('[data-post-outline]');
+
+  if (outline) {
+    const links = Array.from(outline.querySelectorAll('[data-outline-link]'));
+    const headingFor = (link) => document.getElementById(link.getAttribute('href')?.slice(1) || '');
+
+    const setActive = (heading) => {
+      if (!heading) return;
+
+      links.forEach((link) => {
+        const active = headingFor(link) === heading;
+        link.classList.toggle('is-active', active);
+        if (active) {
+          link.setAttribute('aria-current', 'location');
+
+          const outlineRect = outline.getBoundingClientRect();
+          const linkRect = link.getBoundingClientRect();
+          const padding = 8;
+          if (linkRect.top < outlineRect.top + padding) {
+            outline.scrollTop += linkRect.top - outlineRect.top - padding;
+          } else if (linkRect.bottom > outlineRect.bottom - padding) {
+            outline.scrollTop += linkRect.bottom - outlineRect.bottom + padding;
+          }
+        }
+        else link.removeAttribute('aria-current');
+      });
+    };
+
+    const updateActiveHeading = () => {
+      const headings = links.map(headingFor).filter(Boolean);
+      let active = headings[0];
+
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 2) {
+        active = headings[headings.length - 1];
+      } else {
+        for (const heading of headings) {
+          if (heading.getBoundingClientRect().top <= 160) active = heading;
+          else break;
+        }
+      }
+
+      setActive(active);
+    };
+
+    let frame;
+    const onScroll = () => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(updateActiveHeading);
+    };
+
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+    window.addEventListener('hashchange', updateActiveHeading);
+    outline.addEventListener('click', (event) => {
+      const target = event.target;
+      const link = target instanceof Element ? target.closest('[data-outline-link]') : null;
+      if (link instanceof HTMLAnchorElement) setActive(headingFor(link));
+    });
+
+    updateActiveHeading();
+  }
+</script>

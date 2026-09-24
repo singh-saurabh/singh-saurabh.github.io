@@ -1,0 +1,65 @@
+---
+interface Props { label: string; }
+const { label } = Astro.props;
+---
+
+<div class="blog-comparison" role="region" aria-label={label}>
+  <slot />
+</div>
+
+<style>
+  .blog-comparison {
+    margin: 32px 0;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    container-type: inline-size;
+  }
+  .blog-comparison :global(table) {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    line-height: 1.75;
+    text-align: left;
+  }
+  .blog-comparison :global(th) {
+    padding: 14px 20px;
+    background: var(--tag-bg);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+  .blog-comparison :global(th:first-child) { width: 32%; }
+  .blog-comparison :global(td) { padding: 22px 20px; vertical-align: top; }
+  .blog-comparison :global(td:first-child) { font-weight: 650; line-height: 1.5; }
+  .blog-comparison :global(td:last-child) { padding-left: 12px; }
+  .blog-comparison :global(tbody tr + tr) { border-top: 1px solid var(--border); }
+  .blog-comparison :global(td strong) { font-weight: 650; }
+  .blog-comparison :global(a[href^="#reference-"]) { white-space: nowrap; font-size: 12px; }
+
+  @container (max-width: 460px) {
+    .blog-comparison :global(table),
+    .blog-comparison :global(tbody),
+    .blog-comparison :global(tr),
+    .blog-comparison :global(td) { display: block; width: 100%; }
+    /* Keep the column headings available to assistive technology. */
+    .blog-comparison :global(thead) {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip-path: inset(50%);
+      white-space: nowrap;
+    }
+    .blog-comparison :global(tbody tr) { padding: 20px; }
+    .blog-comparison :global(td) { padding: 0; }
+    .blog-comparison :global(td:first-child) { margin-bottom: 8px; font-size: 15px; }
+    .blog-comparison :global(td:last-child) { padding-left: 0; }
+  }
+</style>

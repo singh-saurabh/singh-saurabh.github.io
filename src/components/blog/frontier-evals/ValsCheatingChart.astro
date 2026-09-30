@@ -1,0 +1,90 @@
+---
+// Counts are published in Vals' BioMysteryBench figure tooltips, 15 September 2026.
+const rows = [
+  {
+    "model": "Gemini 3.8 Flash",
+    "attempts": 58,
+    "trials": 270,
+    "successful": 34
+  },
+  {
+    "model": "Gemini 3.6 Flash",
+    "attempts": 21,
+    "trials": 270,
+    "successful": 8
+  },
+  {
+    "model": "Muse Spark 1.2",
+    "attempts": 19,
+    "trials": 270,
+    "successful": 2
+  },
+  {
+    "model": "Grok 4.6",
+    "attempts": 18,
+    "trials": 270,
+    "successful": 9
+  },
+  {
+    "model": "GPT-5.6 Sol",
+    "attempts": 17,
+    "trials": 270,
+    "successful": 5
+  },
+  {
+    "model": "Claude Opus 5",
+    "attempts": 13,
+    "trials": 270,
+    "successful": 7
+  },
+  {
+    "model": "Kimi K3",
+    "attempts": 13,
+    "trials": 270,
+    "successful": 4
+  },
+  {
+    "model": "DeepSeek V4 Flash",
+    "attempts": 10,
+    "trials": 270,
+    "successful": 2
+  },
+  {
+    "model": "GPT-5.6 Luna",
+    "attempts": 8,
+    "trials": 270,
+    "successful": 0
+  }
+];
+---
+<div class="vals-chart">
+  <div class="legend"><span><i class="attempt"></i>Attempted prohibited lookup</span><span><i class="success"></i>Correct answer through lookup</span></div>
+  <div class="rows">
+    {rows.map(row => <div class="row">
+      <span class="model">{row.model}</span>
+      <div class="track" role="img" aria-label={`${row.model}: ${row.attempts} of ${row.trials} attempts involved prohibited lookup; ${row.successful} produced a correct answer through lookup.`} title={`${row.attempts} of ${row.trials} attempts; ${row.successful} correct answers through lookup`}>
+        <span class="bar attempt" style={`width:${row.attempts / row.trials / 0.25 * 100}%`}></span>
+        <span class="bar success" style={`width:${row.successful / row.trials / 0.25 * 100}%`}></span>
+      </div>
+      <span class="value">{(row.attempts / row.trials * 100).toFixed(1)}%</span>
+    </div>)}
+  </div>
+  <div class="axis"><span>0%</span><span>25%</span></div>
+  <div class="note">270 trials per model. Dark bars are a subset of attempted lookups.</div>
+</div>
+<style>
+ .vals-chart { padding: 20px 18px; font-family: var(--font-sans); }
+ .legend { display: flex; flex-wrap: wrap; gap: 8px 20px; margin-bottom: 22px; font-size: 11px; color: var(--text-secondary); }
+ .legend span { display: inline-flex; align-items: center; gap: 6px; }
+ .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 2px; }
+ .attempt { background: #e9b7b3; } .success { background: #9f3934; }
+ .rows { display: grid; gap: 13px; }
+ .row { display: grid; grid-template-columns: 128px minmax(0,1fr) 42px; align-items: center; gap: 10px; }
+ .model { font-size: 12px; line-height: 1.4; }
+ .track { position: relative; height: 19px; background: color-mix(in srgb,var(--text) 5%,transparent); }
+ .bar { position: absolute; inset: 0 auto 0 0; }
+ .value { text-align: right; font-size: 12px; font-variant-numeric: tabular-nums; }
+ .axis { display: flex; justify-content: space-between; margin: 10px 52px 0 138px; color: var(--text-secondary); font-size: 11px; }
+ .note { margin-top: 16px; color: var(--text-secondary); font-size: 11px; line-height: 1.6; }
+ @media (max-width:560px) { .row { grid-template-columns: 99px minmax(0,1fr) 37px; gap: 7px; } .model,.value { font-size: 11px; } .vals-chart { padding: 18px 12px; } .axis { margin-left: 106px; margin-right:44px; } }
+</style>

@@ -13,6 +13,7 @@ interface Props {
   date: Date;
   tags: string[];
   description: string;
+  preface?: string;
   headings: Heading[];
   coverImage?: {
     src: string;
@@ -20,7 +21,7 @@ interface Props {
   };
 }
 
-const { title, date, tags, description, headings, coverImage } = Astro.props;
+const { title, date, tags, description, preface, headings, coverImage } = Astro.props;
 
 const formattedDate = date.toLocaleDateString('en-US', {
   year: 'numeric',
@@ -37,6 +38,11 @@ const formattedDate = date.toLocaleDateString('en-US', {
       <h1 style={`font-size:clamp(24px, 5vw, 34px);font-weight:700;letter-spacing:-0.03em;line-height:1.2;margin-bottom:16px;`}>
         {title}
       </h1>
+      {preface && (
+        <div class="prose">
+          <p><em>{preface}</em></p>
+        </div>
+      )}
       <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
         <span style="font-size:14px;color:var(--text-secondary);font-variant-numeric:tabular-nums;">
           {formattedDate}

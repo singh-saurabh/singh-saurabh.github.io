@@ -1,0 +1,336 @@
+---
+title: "So you have Benchmarks"
+date: 2026-09-30
+tags: ["agents", "evaluations", "safety", "research"]
+description: "What frontier AI evaluations tell us about capability and reliability, how they uncover new risks, and where testing and oversight need to catch up."
+preface: >-
+  AI evaluations increasingly test agents doing work. Can they finish the job, follow the rules, and do it again reliably? Recent results show real progress. They also show how much a benchmark score can leave out.
+coverImage:
+  src: "/images/social/state-of-frontier-evals.jpg"
+  alt: "A cobalt-blue sphere on a glass path through measuring gates on pale stone"
+draft: false
+---
+
+import BlogComparisonTable from '../../components/blog/durable-agents/BlogComparisonTable.astro';
+import SourceFigure from '../../components/blog/frontier-evals/SourceFigure.astro';
+import ValsCheatingChart from '../../components/blog/frontier-evals/ValsCheatingChart.astro';
+
+An agent can score well without finishing the job. It might complete most steps but miss a requirement. It might finish once, then fail on the next attempt. Recent evaluations separate these results so we can see what a high score actually means.
+
+Researchers also test how agents do the work. Do they take forbidden shortcuts? Can a monitor catch them? Do they stop when their permissions change? A completion score alone cannot answer these questions.
+
+We have better evidence about agents doing specific tasks than about agents working across sessions or in teams. Outside evaluators also face limits on what they can test and publish. Both gaps matter when deciding how much to trust these systems.
+
+## What a score measures
+
+An evaluation tests something about a system, such as its accuracy or ability to follow instructions. A benchmark uses shared tasks and scoring rules to compare systems. For agents, four questions matter:
+
+<BlogComparisonTable label="Evaluation questions and the evidence needed">
+
+| Question | Evidence we need |
+| --- | --- |
+| Can it do the work? | Completed tasks checked against their requirements |
+| Does it do the work consistently? | Repeated attempts, varied conditions, and records of failures |
+| Does it respect instructions and permissions? | Tests of permissions, conflicting requests, and pressure to take shortcuts |
+| Can we catch and contain failures? | Tests of monitors, approval checks, intervention, and recovery |
+
+</BlogComparisonTable>
+
+The score depends on the whole setup. The same model may perform differently with better tools, more time, or different instructions. Memory and the surrounding software matter too. To interpret a score, we need to know how the agent was configured and whether another model helped it.
+
+## The organizations behind the scores
+
+Some evaluators focus on useful work. Others study unfamiliar tasks, dangerous capabilities, or failures in oversight. Their scores tell us different things.
+
+Being separate from a lab does not mean having no ties to it. An evaluator may sell the lab services, accept donations, receive free access, or do joint research. To judge its independence, look at who sets the test, pays for it, and controls publication.
+
+<BlogComparisonTable label="Evaluation organizations, their focus, and their relationships with labs">
+
+| Organization | What it measures and how it works with labs |
+| --- | --- |
+| **Artificial Analysis (AA)** | **Measures:** Broad model and agent capability, workflow completion and consistency, alongside price, speed, and serving performance. <br /><br /> **Lab relationships:** A commercial benchmarking company with lab clients and pre-release evaluation work. AA says commercial relationships do not influence benchmark results. [[12]](#reference-12) |
+| **Vals AI** | **Measures:** Professional work in fields such as finance, law, healthcare, and coding, using private test sets for its own benchmarks. Its newer work also covers evaluation cheating, cyber risk, AI research capability, and youth safety. <br /><br /> **Lab relationships:** A venture-backed company that licenses private test data and builds benchmarks with domain experts. Its results appear in lab model cards. The cited disclosures do not say which labs, if any, pay for evaluations. [[13]](#reference-13) |
+| **Arena** | **Measures:** Human preferences between model responses. Its Agent Arena also measures task feedback, response to corrections, and tool-use failures in real user sessions. The agent ranking uses a different method from its paired-vote leaderboards. <br /><br /> **Lab relationships:** A commercial evaluation platform that sells services to model labs and enterprises. Providers can test unreleased variants under aliases. Public ranking under the official name requires meeting both the provider's release criteria and Arena's policy. [[14]](#reference-14) |
+| **ARC Prize Foundation** | **Measures:** Reasoning and adaptation to unfamiliar tasks. ARC-AGI-3 tests how agents explore interactive environments and learn their rules. It compares their efficiency with humans. This is a narrower question than performance across workplace tasks. <br /><br /> **Lab relationships:** A nonprofit funded partly by AI labs. Its policy gives sponsors no special access to private tests or control over results and publication. An academic panel reviews its methods and policy, though not every result. [[15]](#reference-15) |
+| **METR** | **Measures:** Autonomous task capability, task time horizons, AI research capability, and whether monitors can catch unwanted actions. Its risk assessments ask what these abilities imply for human control. <br /><br /> **Lab relationships:** A research nonprofit conducting pre-release assessments with labs. It says it declines funding from frontier AI companies and their staff. It does receive substantial free tokens for evaluations. Publication conditions must still be checked for each assessment. [[16]](#reference-16) [[5]](#reference-5) |
+| **Apollo Research** | **Measures:** Deception, attempts to evade oversight, and agent monitoring. It also studies how training could produce these behaviors, beyond testing a released model. <br /><br /> **Lab relationships:** Announced its move to a public benefit corporation in January 2026. It conducts evaluations and joint research with frontier developers while building commercial monitoring products. It says it separates research from product work and reserves board seats to protect its mission. [[17]](#reference-17) |
+| **UK AI Security Institute (AISI)** | **Measures:** Serious security and safety risks, including cyber and chemical-biological capabilities, safeguards, and risks from autonomous systems. It also tests ways to reduce those risks. <br /><br /> **Lab relationships:** A UK government research organization, separate from model developers. It explicitly acts as a technical partner to labs, testing advanced models and sharing findings to improve safeguards. It says some methods and objectives are too sensitive to publish. [[18]](#reference-18) |
+| **US Center for AI Standards and Innovation (CAISI)** | **Measures:** Capabilities and vulnerabilities that affect national security, including cyber and biological risks. It also develops evaluation methods and supports government testing of AI in practical workflows. <br /><br /> **Lab relationships:** Part of NIST, with a government mandate. Its May agreements with Google DeepMind, Microsoft, and xAI cover pre-deployment evaluations and research. [[19]](#reference-19) |
+
+</BlogComparisonTable>
+
+### Different tests, overlapping goals
+
+These areas overlap. Vals studies both professional work and frontier risks. METR tests what agents can do and whether monitors can catch unwanted actions. Different tests can reveal different strengths and weaknesses in the same system.
+
+## From capability to reliability
+
+### Completing the work
+
+Workflow benchmarks test whether agents finish jobs across applications. They check the resulting records to see what was done.
+
+Artificial Analysis's September AutomationBench-AA uses 657 held-out workflows across six business functions. The applications are simulated. Its main score gives partial credit for completed objectives, then averages the results across tasks. Breaking a task's constraints earns a zero. A second measure counts only workflows completed in full, without a violation. [[1]](#reference-1)
+
+GPT-6 Astra at maximum effort scored 68.5% with partial credit. It completed 41.6% of workflows in full. The gap shows why progress and completion need separate measures. [[1]](#reference-1)
+
+<SourceFigure
+  id="workflow-results"
+  title="Completing objectives versus completing the whole task"
+  src="/images/blog/frontier-evals/automationbench-complete.png"
+  alt="Artificial Analysis chart of fully completed AutomationBench-AA workflows. GPT-6 Astra leads at 41.6%."
+  width={2464} height={904}
+  source="https://artificialanalysis.ai/articles/artificial-analysis-intelligence-index-v4-3#automation-bench"
+  publisher="Artificial Analysis, September 2026"
+  caption="Original chart, with Tasks Completed selected. Every objective must be met without a guardrail violation. Expand below to see the separate partial-credit score."
+>
+  <details>
+    <summary>Compare with the partial-credit score: Astra 68.5%</summary>
+    <a href="/images/blog/frontier-evals/automationbench-objectives.png" target="_blank" rel="noopener noreferrer"><img src="/images/blog/frontier-evals/automationbench-objectives.png" alt="Artificial Analysis partial-credit scores: GPT-6 Astra 68.5%. These are objective scores, not fully completed workflow rates." width="2464" height="872" loading="lazy" /></a>
+  </details>
+</SourceFigure>
+
+Partial progress can still save time. These scores do not tell us how much, once someone checks and finishes the work.
+
+### Repeating the result
+
+Artificial Analysis's AA-AnalystAgent tests analysis using real spreadsheets and documents. Each of its 80 questions runs five times. A question counts as solved only if all five attempts succeed. At launch, the best score on this measure was 54%. [[2]](#reference-2)
+
+GPT-5.5 had the highest average success rate per attempt. Opus 5 led when all five attempts had to succeed. Changing the measure changed the leader. [[2]](#reference-2)
+
+The three measures answer different questions:
+
+<BlogComparisonTable label="Success metrics and what they measure">
+
+| Metric | What it asks |
+| --- | --- |
+| **pass@1** | How often does a single attempt succeed? |
+| **pass@5** | How often does at least one of five attempts succeed? |
+| **pass⁵** | How often do all five attempts succeed? |
+
+</BlogComparisonTable>
+
+<SourceFigure
+  id="reliability-results"
+  title="Single-attempt and all-five success give different rankings"
+  src="/images/blog/frontier-evals/analyst-reliability.png"
+  alt="Original AA-AnalystAgent chart comparing pass@1, pass@5, and pass⁵ for ten models. Opus 5 leads on all-five success at 54%; GPT-5.5 leads on average single-attempt success at 66%; Kimi K3 scores 39% on all-five success."
+  width={2464} height={920}
+  source="https://artificialanalysis.ai/articles/aa-analyst-agent#reliability"
+  publisher="Artificial Analysis, August 2026"
+  caption="The light, medium, and dark bars show single-attempt, at-least-once, and all-five success. Original publisher export."
+/>
+
+A high pass@5 score helps if the system can identify the correct attempt. Otherwise, someone still has to check the answers. Success on all five attempts is stronger evidence of consistency. It still applies only to the tested cases; changed documents or instructions may produce different results.
+
+### Taking on longer tasks
+
+METR measures task length by how long a human would need to finish it. An agent's 50% time horizon is the estimated task length at which it succeeds half the time. This is human task time, not time the agent can safely run unattended.
+
+METR's May report covered models from February and March. On its software tasks, the estimated 50% horizon for the best public models was about 12 hours. The uncertainty interval was wide: 5–61 hours. Requiring 80% success cut the estimate to about 1.5 hours. The suite was also nearing the limits of what it could reliably measure. [[3]](#reference-3)
+
+<SourceFigure
+  id="time-horizon-results"
+  title="A higher success requirement means a shorter task horizon"
+  source="https://metr.org/blog/2026-05-19-frontier-risk-report/"
+  publisher="METR, May 2026"
+  caption="Selected public-frontier results from METR’s report on February–March models, reformatted from its summary table. Durations refer to human task time."
+>
+  <table>
+    <thead><tr><th scope="col">Required success</th><th scope="col">Estimated horizon</th><th scope="col">Uncertainty interval</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">50%</th><td>About 12 hours</td><td>5–61 hours</td></tr>
+      <tr><th scope="row">80%</th><td>About 1.5 hours</td><td>50 minutes–2 hours 40 minutes</td></tr>
+    </tbody>
+  </table>
+</SourceFigure>
+
+The estimate depends strongly on the success threshold, as well as on the tasks being tested.
+
+Longer tasks also require judgment. In its September assessment of Opus 5.5, METR found modest improvements but continued weaknesses on difficult, open-ended work. It expected useful research assistance and some automation. It judged full automation of AI R&D unlikely. [[4]](#reference-4)
+
+This was a preliminary assessment. METR directly tested five tasks during ten business days of API access and also drew on other information. Open-ended work requires choosing a useful approach and recognizing when it has failed. Completing an assigned task alone does not prove those abilities. [[4]](#reference-4)
+
+## When scores mislead
+
+Tools give agents ways to interfere with a test. They may look up forbidden answers, exploit a bug, or alter something the grader checks. The result can look correct without demonstrating the skill being tested.
+
+METR encountered this in its June evaluation of GPT-5.6 Sol. Counting detected cheating as failure produced a time-horizon estimate of 11.3 hours. Counting it as success pushed the estimate beyond 270 hours. Removing those attempts left too little useful data on several long tasks. METR explicitly rejected all of these as dependable capability estimates. [[5]](#reference-5)
+
+<SourceFigure
+  id="cheating-estimates"
+  title="The scoring decision changed the estimate dramatically"
+  source="https://metr.org/blog/2026-06-26-gpt-5-6-sol/"
+  publisher="METR, June 2026"
+  caption="Values reported in METR’s prose, arranged for comparison. METR did not consider any of these a dependable measurement of GPT-5.6 Sol’s capability."
+>
+  <table>
+    <thead><tr><th scope="col">Treatment of detected cheating</th><th scope="col">50% horizon estimate</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">Count as failure</th><td>11.3 hours</td></tr>
+      <tr><th scope="row">Count as success</th><td>More than 270 hours</td></tr>
+      <tr><th scope="row">Discard the attempts</th><td>71 hours, highly uncertain</td></tr>
+    </tbody>
+  </table>
+  <p class="figure-note">These are alternative scoring treatments of one evaluation, not three measures of reliable autonomy.</p>
+</SourceFigure>
+
+No scoring choice solved the problem. The cheating made it hard to get a dependable estimate at all.
+
+Vals found related problems in its September audit of biology and coding evaluations. In BioMysteryBench, Gemini 3.8 Flash tried to look up source studies despite a ban on doing so. This happened in roughly 21% of trials. [[6]](#reference-6)
+
+The audit had limits. Vals used another model to classify cheating assessments for trials that scored zero. Its test environment also differed from the lab's. The findings show what this audit detected; they do not count every possible instance of cheating. [[6]](#reference-6)
+
+<SourceFigure
+  id="prohibited-lookup-results"
+  title="Prohibited answer lookup in BioMysteryBench"
+  source="https://www.vals.ai/blogs/cheating-on-the-rise"
+  publisher="Vals, September 2026"
+  caption="Chart redrawn from Vals’ published counts. All bars use all trials as the denominator; the darker segment is the subset of attempted prohibited lookups that produced a correct answer."
+>
+  <ValsCheatingChart />
+</SourceFigure>
+
+Contamination is a different problem: the model may have seen the benchmark during training. Keeping questions private can reduce that risk. It does not prevent an agent from finding hidden answers during a test or exploiting a faulty grader.
+
+A convincing result needs a record of how the agent reached it. Checking its actions can reveal failures that answer scoring misses.
+
+## Discovering capabilities and risks
+
+A fixed benchmark tests known tasks. To discover new behavior, researchers try situations the benchmark does not cover. They can then turn the findings into repeatable tests.
+
+Better tools or more time can reveal a capability. In OpenAI's cyber assessment, Astra developed a working exploit against a hardened operating-system target in a lab. It had web access and could use subagents. Experts checked safety and validated the result without directing the research. The result belongs to that setup; an ordinary deployment may allow less access. [[7]](#reference-7)
+
+### Probing for failures
+
+A targeted test starts with a suspected failure and creates conditions where it might happen. An incident during development can reveal what to test.
+
+In July, agents running OpenAI's internal cyber evaluations escaped their intended network restrictions and compromised parts of Hugging Face's infrastructure. OpenAI's [incident report](https://cdn.openai.com/pdf/67869394-cb91-4c12-888c-5cbd85c7814c/OpenAI-Hugging-Face%20Incident-Technical-Report.pdf) attributes most of the activity to an internal research model.
+
+OpenAI later paired unusually difficult cyber tasks with tempting targets the agents were not allowed to attack. Astra did not attack those targets in the reported test; GPT-5.6 Sol did. The tests ran without production cyber safeguards. This showed improvement in one setting. It does not prove that agents will respect permissions in every setting. [[7]](#reference-7)
+
+<SourceFigure
+  id="honeypot-results"
+  title="Testing unauthorized shortcuts on difficult tasks"
+  src="https://deploymentsafety.openai.com/data/eval-sets/gpt-6-astra/assets/images/image42.png"
+  width={2048} height={1991}
+  alt="OpenAI’s original ExploitGym honeypot chart comparing GPT-5.6 Sol and GPT-6 Astra on attempts to attack out-of-scope infrastructure."
+  source="https://deploymentsafety.openai.com/gpt-6-astra"
+  publisher="OpenAI, September 2026, Figure 9"
+  caption="Original honeypot evaluation figure. Tests used deliberately difficult cybersecurity tasks without production cyber safeguards; this is not a production incident rate."
+/>
+
+A test designed to provoke failure can show what is possible. To estimate how often it happens, we need evidence from typical use.
+
+### Checking predictions against use
+
+OpenAI's deployment simulation uses past interactions to test how a new model might respond. It predicts rates of unwanted behavior, then compares them with observations after release. The median prediction error was a factor of 1.5. Some errors were much larger. Only the GPT-5.4 predictions were recorded before release; the other comparisons were made afterward. [[8]](#reference-8)
+
+<SourceFigure
+  id="deployment-predictions"
+  title="Comparing simulated behavior with deployment observations"
+  src="https://images.ctfassets.net/kftzwdyauwt9/7JIBwJMplKThuVkp4gnlwq/b38b936b0497dd8c710a1c1c219067da/Diagram2-desktop-light.svg?w=3840&amp;q=90"
+  width={598} height={619}
+  alt="OpenAI’s Figure 2 comparing deployment-simulation frequency predictions with observed rates of undesirable behavior across model deployments."
+  source="https://openai.com/index/deployment-simulation/"
+  publisher="OpenAI, June 2026, Figure 2"
+  caption="Original prediction-versus-observation figure. GPT-5.4 predictions were registered in advance; the other comparisons were retrospective."
+/>
+
+The main method samples one assistant response at a time. The selected interactions may miss rare behavior. Past usage may also miss new ways people use a product. [[8]](#reference-8) As the [simulation article](/blog/state-of-agent-simulation/) discusses, simulations still need to be checked against actual use.
+
+### Testing the monitors
+
+A model that watches another agent needs testing too.
+
+In METR's January study, agents received a main task and a hidden side task. A monitor read the transcript without seeing the side-task instruction. Researchers measured how often the agent completed the side task without being flagged. [[9]](#reference-9)
+
+Models with longer measured task horizons tended to do better in both roles. As monitors, they were better at detecting side tasks. As agents, they were better at completing them unnoticed. The study covered a small set of tasks and limited prompting methods. [[9]](#reference-9)
+
+<SourceFigure
+  id="monitor-results"
+  title="Hidden side tasks that escaped monitoring"
+  src="https://metr.org/assets/images/monitorability-post/percent_uncaught_heatmap_excluding_visible.png"
+  width={1880} height={1291}
+  alt="METR heatmap showing the percentage of runs where an agent completed a hidden side task without the monitor flagging it, for different agent and monitor models."
+  source="https://metr.org/blog/2026-01-19-early-work-on-monitorability-evaluations/"
+  publisher="METR, January 2026"
+  caption="Percentage of all runs in which the side task succeeded and the monitor did not flag it. Agents were instructed to perform the side task; monitors could not see their reasoning."
+/>
+
+The chart counts runs where the side task succeeded and the monitor missed it. A low score could mean the monitor worked, or that the agent failed at the side task. It cannot tell us how often an agent would choose a hidden goal on its own.
+
+The monitors read completed transcripts. Catching a problem afterward does not show whether a monitor can stop it in time.
+
+## Testing persistent agents and teams
+
+An agent working across sessions has to deal with change. Its permissions may be revoked. Its memory may be outdated. A user may cancel work it has already delegated. Tests that reset the context and keep permissions fixed miss these cases.
+
+OpenAI's September Astra appendix tests dots, its persistent agent, across sequences of tasks. It examines whether the agent respects changing permissions and stays within the assigned work. One test placed either five or ten tasks between an initial task and a final task. The rate of moderate scope violations rose from 8.6% to 19.7% with the longer sequence. [[7]](#reference-7)
+
+These violations meant acting beyond the intended task without evidence of a severe outcome. No severe breaches were observed in that evaluation. [[7]](#reference-7)
+
+<SourceFigure
+  id="persistent-boundaries"
+  title="Scope violations across a longer sequence of tasks"
+  source="https://deploymentsafety.openai.com/gpt-6-astra"
+  publisher="OpenAI, September 2026, Section 12.3.5.2"
+  caption="Values from the system card, arranged for comparison. Each episode contained an initial task, the intervening tasks shown, and a final task. Results are for Astra in the dots setup; they are not rates from ordinary deployment."
+>
+  <table>
+    <thead><tr><th scope="col">Intervening tasks</th><th scope="col">Moderate scope violations</th></tr></thead>
+    <tbody>
+      <tr><th scope="row">5</th><td>8.6% of samples</td></tr>
+      <tr><th scope="row">10</th><td>19.7% of samples</td></tr>
+    </tbody>
+  </table>
+</SourceFigure>
+
+Teams add more failure modes. As the [multiagent systems article](/blog/state-of-multiagent-systems/) describes, agents can share a mistaken assumption and spread it through communication. Testing each agent alone is not enough. We also need to check the combined work, permissions during handoffs, and whether every worker stops after cancellation.
+
+Anthropic's September Fable/Mythos 5.1 report notes a gap in its automated behavioral audit. The method gives less visibility into very long contexts and multiagent settings. This limit applies to that audit, not everything the lab tests. [[10]](#reference-10)
+
+DeepMind's June funding call also identifies multiagent safety as a research priority. It seeks repeatable test environments, studies of agent networks, and better oversight. That shows interest in the problem; the proposed methods still need to be tested. [[11]](#reference-11)
+
+**We need more independent tests of persistent agents and complete teams.** The public evidence reviewed here does not yet show how different team designs compare when permissions change or agents serve different owners. Repeatable comparisons would help guide deployment. Labs may have additional internal evidence.
+
+## From evaluation to deployment
+
+Evaluations help decide whether to release a system and what access to give it. Those decisions also depend on what its mistakes could affect, whether we can catch them, and whether we can undo the damage.
+
+External evaluators can challenge a lab's assumptions. Their access and publication rights determine how much scrutiny they can provide. METR's GPT-5.6 Sol assessment required approval from OpenAI's communications and legal teams. METR understood this as a confidentiality review and said it changed neither its conclusions nor its tone. [[5]](#reference-5)
+
+OpenAI still had the legal right to block risk conclusions based on non-public information. METR therefore warned against treating the assessment as strong formal oversight. [[5]](#reference-5)
+
+Testing a public API reveals different things from reviewing internal incidents or inspecting a lab's safeguards. An evaluator's name alone does not tell us what it could see or publish.
+
+Model and system cards help document the tested setup, limitations, safeguards, and reasons for release. A risk label summarizes the lab's judgment under its chosen framework. To understand that judgment, we still need to read the tests behind it.
+
+## The remaining evidence gap
+
+Recent evaluations tell us more than a single score can. They separate partial progress from finished work. They test whether success repeats and reveal shortcuts that answer scoring misses.
+
+We know less about persistent agents and complete teams. They need to stay reliable as conditions change, follow revised permissions, and remain under effective supervision.
+
+Better evidence will require observing agents in use and checking test predictions against real outcomes. Independent evaluators need enough access to investigate and the freedom to publish their findings. Those findings should shape what agents are allowed to do and who is responsible when they fail.
+
+## References
+
+1. <span id="reference-1"></span> [Artificial Analysis: Intelligence Index v4.3](https://artificialanalysis.ai/articles/artificial-analysis-intelligence-index-v4-3) (7 September 2026; benchmark report).
+2. <span id="reference-2"></span> [Artificial Analysis: AA-AnalystAgent](https://artificialanalysis.ai/articles/aa-analyst-agent) (10 August 2026; benchmark report).
+3. <span id="reference-3"></span> [METR: Frontier Risk Report, February–March 2026](https://metr.org/blog/2026-05-19-frontier-risk-report/) (19 May 2026; multi-lab assessment).
+4. <span id="reference-4"></span> [METR: Predeployment evaluation of Claude Opus 5.5](https://metr.org/blog/2026-09-22-claude-opus-5-5/) (22 September 2026; preliminary external assessment).
+5. <span id="reference-5"></span> [METR: Predeployment evaluation of GPT-5.6 Sol](https://metr.org/blog/2026-06-26-gpt-5-6-sol/) (26 June 2026; external assessment).
+6. <span id="reference-6"></span> [Vals: AI Cheating is on the Rise](https://www.vals.ai/blogs/cheating-on-the-rise) (15 September 2026; trajectory audit).
+7. <span id="reference-7"></span> [OpenAI: GPT-6 Astra System Card](https://deploymentsafety.openai.com/gpt-6-astra) (3 September 2026, including the 29 September persistent-agent appendix; lab evaluations).
+8. <span id="reference-8"></span> [OpenAI: Predicting model behavior before release by simulating deployment](https://openai.com/index/deployment-simulation/) (16 June 2026; lab research).
+9. <span id="reference-9"></span> [METR: Early work on monitorability evaluations](https://metr.org/blog/2026-01-19-early-work-on-monitorability-evaluations/) (page dated 22 January 2026; exploratory study).
+10. <span id="reference-10"></span> [Anthropic: Introducing Claude Fable 5.1 and Claude Mythos 5.1](https://www.anthropic.com/claude-fable-and-mythos-5-1) (1 September 2026; release and assessment report).
+11. <span id="reference-11"></span> [Google DeepMind: Investing in multi-agent AI safety research](https://deepmind.google/blog/investing-in-multi-agent-ai-safety-research/) (11 June 2026; funding call and research agenda).
+12. <span id="reference-12"></span> Artificial Analysis: [current benchmark coverage](https://artificialanalysis.ai/), [commercial services](https://artificialanalysis.ai/contact), and [lab relationships and stated independence policy](https://artificialanalysis.ai/careers/member-of-technical-staff-commercial-tech-start-up-track) (current organizational disclosures, accessed 30 September 2026).
+13. <span id="reference-13"></span> Vals: [Series A and research expansion](https://www.vals.ai/blogs/series-a) (13 August 2026), [methodology and dataset licensing](https://www.vals.ai/methodology), and [research updates](https://www.vals.ai/blogs) (current pages accessed 30 September 2026).
+14. <span id="reference-14"></span> Arena: [Agent Arena methodology](https://arena.ai/blog/agent-arena-methodology) (4 June 2026) and [FAQ on funding, model access, and publication](https://arena.ai/faq) (accessed 30 September 2026).
+15. <span id="reference-15"></span> ARC Prize: [ARC-AGI-3](https://arcprize.org/arc-agi/3) and [Verified Testing Policy](https://arcprize.org/policy) (current benchmark and policy pages, accessed 30 September 2026).
+16. <span id="reference-16"></span> [METR: Funding update](https://metr.org/blog/2026-08-14-funding-update/) (14 August 2026; funding, research priorities, and independence disclosure).
+17. <span id="reference-17"></span> Apollo Research: [PBC transition](https://apolloresearch.ai/blog/apollo-research-is-becoming-a-pbc) (20 January 2026) and [research and monitoring update](https://www.apolloresearch.ai/blog/apollo-update-may-2026) (13 May 2026).
+18. <span id="reference-18"></span> [UK AISI: Research agenda](https://www.aisi.gov.uk/research-agenda) (current institutional remit, research priorities, and lab collaboration; accessed 30 September 2026).
+19. <span id="reference-19"></span> NIST/CAISI: [current remit](https://www.nist.gov/caisi), [official notice of lab agreements](https://content.govdelivery.com/accounts/USNIST/bulletins/415cadf) (5 May 2026), and [GSA evaluation partnership](https://www.nist.gov/news-events/news/2026/03/caisi-signs-mou-gsa-boost-ai-evaluation-science-federal-procurement-through) (18 March 2026; current remit accessed 30 September 2026).

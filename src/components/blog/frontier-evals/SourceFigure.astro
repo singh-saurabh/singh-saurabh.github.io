@@ -1,0 +1,40 @@
+---
+interface Props {
+  title: string;
+  src?: string;
+  alt?: string;
+  width?: number;
+  height?: number;
+  source: string;
+  publisher: string;
+  caption: string;
+  id: string;
+}
+const { title, src, alt, width, height, source, publisher, caption, id } = Astro.props;
+---
+<figure class="source-figure" aria-labelledby={`${id}-title`} id={id}>
+  <div class="figure-heading" id={`${id}-title`}>{title}</div>
+  {src && <a class="image-link" href={src} target="_blank" rel="noopener noreferrer" aria-label={`Open full-size figure: ${title}`}>
+    <img src={src} alt={alt} width={width} height={height} loading="lazy" decoding="async" referrerpolicy="no-referrer" />
+  </a>}
+  <slot />
+  <figcaption>{caption} <a href={source} target="_blank" rel="noopener noreferrer">Source: {publisher}</a>{src && <> · <a href={src} target="_blank" rel="noopener noreferrer">Open full size ↗</a></>}</figcaption>
+</figure>
+<style>
+  .source-figure { margin: 32px 0; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; font-family: var(--font-sans); }
+  .figure-heading { padding: 15px 18px; font-size: 14px; font-weight: 650; line-height: 1.5; border-bottom: 1px solid var(--border); }
+  .image-link { display: block; background: #fff; }
+  .source-figure img { display: block; width: 100%; height: auto; margin: 0; border: 0; border-radius: 0; }
+  figcaption { padding: 14px 18px; border-top: 1px solid var(--border); font-size: 12px; line-height: 1.7; color: var(--text-secondary); }
+  figcaption a { color: var(--accent); }
+  .source-figure :global(details) { padding: 14px 18px; font-size: 13px; line-height: 1.6; }
+  .source-figure :global(summary) { cursor: pointer; color: var(--accent); }
+  .source-figure :global(details img) { margin-top: 16px; width: 100%; height: auto; }
+  .source-figure :global(table) { width: 100%; margin: 0; font-size: 13px; line-height: 1.6; border-collapse: collapse; }
+  .source-figure :global(th), .source-figure :global(td) { padding: 12px 14px; text-align: left; border-bottom: 1px solid var(--border); white-space: normal; }
+  .source-figure :global(tbody tr:last-child td), .source-figure :global(tbody tr:last-child th) { border-bottom: 0; }
+  .source-figure :global(.figure-note) { margin: 0; padding: 12px 16px; font-family: var(--font-sans); font-size: 12px; line-height: 1.6; color: var(--text-secondary); }
+  @media (max-width: 560px) {
+    .source-figure :global(th), .source-figure :global(td) { padding: 10px 8px; font-size: 12px; }
+  }
+</style>

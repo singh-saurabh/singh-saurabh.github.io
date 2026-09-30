@@ -1,0 +1,152 @@
+---
+title: "State of Agent Simulation"
+date: 2026-09-30
+tags: ["agents", "simulation", "evaluations", "research"]
+description: "Simulating work, people, and organizations: what recent research lets us test, what it can predict, and where validation still falls short."
+draft: false
+---
+
+import SimulationDiagram from '../../components/blog/agent-simulation/SimulationDiagram.astro';
+
+Agents are being asked to work across applications, respond to people, and coordinate with other agents. Testing a final answer tells us only part of how these systems behave. We also need to know what happens along the way: which records change, how the agent handles missing information, and whether it respects the constraints of the task.
+
+Simulation gives us somewhere to study that behavior. We can recreate a work environment, run different agents through it, and inspect the results. We can also use agents to represent people, then study how they respond to a situation or interact inside an organization.
+
+These are two related but different uses. In the first, the agent is the system being tested. In the second, agents help create the world we are studying. The two uses overlap when a simulated person becomes part of the environment used to test another agent.
+
+**Recent work is making these simulations more useful, but the evidence is uneven.** Checking whether an agent correctly changed a database is a different problem from predicting how a real person will behave. The distinction shapes what we can learn from each result.
+
+## Simulating real work
+
+### Tools need a world behind them
+
+A workflow simulation needs more than tool descriptions and plausible responses. It needs a starting state, rules for what actions do, and a way to inspect the outcome. Records must remain consistent as the agent reads and changes them. Permissions, missing information, and failed operations need to affect what happens next.
+
+Zapier's AutomationBench puts this into a business-workflow setting. Its public suite contains 600 tasks across six domains, using 47 simulated SaaS tools. Tasks begin with an initialized environment and are checked against the state the agent leaves behind. This lets the evaluator ask whether the requested work was completed, beyond whether individual tool calls were valid. [[1]](#reference-1)
+
+EnterpriseOps-Gym extends this kind of testing across 1,150 tasks in eight interconnected domains, with persistent data and outcome checks. Its reported failures include inconsistent planning, poor recovery, and failure to respect policy constraints. These are problems that require a sequence of actions to reveal. [[2]](#reference-2)
+
+<SimulationDiagram kind="workflow" />
+
+The benefit is control. We can reset an environment and compare model versions on the same work. We can also change one condition, such as which information is available, and inspect how behavior changes. The environment defines what the test can reveal: a task suite without interruptions tells us little about recovery from them.
+
+### Real applications expose different failures
+
+Simulation doesn't require every component to be artificial. A test can run real software with controlled data and tasks. That preserves application behavior which a mock might simplify or omit.
+
+ERPBench takes this approach with a self-hosted ERPNext installation. Agents operate through screenshots and mouse and keyboard actions, while the evaluator checks database fields afterward. The September study uses 30 tasks, each run five times per agent. [[3]](#reference-3)
+
+Its results show why the final check matters. In the six tasks involving chains of documents, UI-TARS reached the save step in 80% of runs but completed none successfully. Claude Sonnet 4.6, meanwhile, achieved high success across the selected task groups. The study reveals differences between agents and between visible progress and a correct result. [[3]](#reference-3)
+
+That evidence has a specific scope. The tasks cover one application, access is through screenshots, and evaluation replaces the human approval step with an automatic approver. It measures performance under those conditions, rather than the reliability of an entire business deployment. [[3]](#reference-3)
+
+### Starting from actual usage
+
+Handwritten tasks give researchers control over what they test. Historical interactions provide another starting point: the situations users actually brought to a system.
+
+OpenAI's deployment simulation takes recent conversation histories and generates a replacement response using a candidate model. Researchers then compare forecasts of unwanted behavior with observations after release. The GPT-5.4 study registered its predictions in advance; other model comparisons were retrospective. [[4]](#reference-4)
+
+For coding agents, another model simulates tool responses using repository context and recorded tool behavior. Candidate actions can then be tested without running them against live systems. [[4]](#reference-4)
+
+The forecasts estimated behavior rates more accurately than tests built from challenging prompts. But the main method simulates a single assistant response, and rare failures may never appear in the sampled traffic. Historical usage also cannot fully anticipate how people will use a substantially different product. [[4]](#reference-4)
+
+## Simulating people
+
+When an agent represents a person, the problem changes. We are asking a model to produce responses that stand in for human responses. Fluent, consistent answers are easy to inspect; whether they represent the right people requires outside evidence.
+
+A simulated person needs a description of who they are, what they know, and the situation they face. That description can come from a short persona, demographic data, interview records, or observed routines. An interactive simulation also needs to decide what the person remembers and how events change their next response. Each choice affects what behavior the model can reproduce.
+
+### Real observations can improve the simulation
+
+A July study of behavior during a Philadelphia heatwave shows what grounding in data can contribute. Researchers initialized agents using demographic data, time-use patterns, and spatial context. They reserved a separate household survey with 603 valid responses for validation, rather than feeding its answers into the simulated people. [[5]](#reference-5)
+
+With those inputs, the simulated activity profiles matched the survey more closely: mean correlation rose from about 0.35 to 0.84. Yet the simulation still reproduced less than half the measured size of the behavioral change during the heatwave. It captured the pattern better than the magnitude. [[5]](#reference-5)
+
+The comparison concerns group-level, self-reported activities during one event. It does not establish that the model can predict a particular person's movements or transfer unchanged to another city. It does show how to measure improvement against observations kept out of the simulation's inputs. [[5]](#reference-5)
+
+### Believable people can still give misleading answers
+
+Other studies show why broad conclusions are premature. *When Synthetic Users Fail* tests four models on survey responses about US social attitudes and cross-cultural values. Under its demographic-prompting setup, none beat the strongest conventional prediction baseline at predicting individuals' answers. The models also exaggerated how strongly demographic groups differed. [[6]](#reference-6)
+
+This matters because a simulation can reproduce an overall distribution while misrepresenting the people inside it. A reasonable average does not establish that it identifies which group prefers an option, or how a particular person will respond. The paper's findings apply to its survey questions and prompting methods; richer records or other training approaches need their own tests. [[6]](#reference-6)
+
+There is a second problem: the result can depend heavily on how the simulator is configured. In a July study, Jamie Cummins varied models, prompts, generation settings, and the information supplied about participants. Configurations that reproduced one feature of human data well often did poorly on another. Selecting the most convincing run can therefore give an inflated impression of reliability. [[7]](#reference-7)
+
+For people simulation, validation needs to name the target. Reproducing population averages, differences between groups, individual responses, and reactions to a new intervention are separate claims. Evidence for one should not silently become evidence for all four.
+
+## Simulating organizations
+
+An organization adds relationships and constraints to the people inside it. Who can communicate with whom? Who sees which information? Who makes a decision, and what is each participant trying to achieve? A useful simulation needs to make those assumptions explicit.
+
+It also helps to distinguish a company's records from its behavior. Era by Eon generates a fictional enterprise with connected records across applications such as Salesforce, Zendesk, and Gong. Shared entities keep the data consistent, and generated answer keys make factual questions checkable. Its reported model comparison covers 33 questions on one generated company. This creates an environment for testing work over business data; it does not validate a model of how that company's employees would behave. [[8]](#reference-8)
+
+Anthropic's *AI Organizations* research studies the behavioral side. It constructs role-based consulting and software teams, then compares them with individual agents on 12 tasks involving tensions between business objectives and ethical behavior. Some team configurations improved business scores while worsening ethical scores. The size of that tradeoff depended on the model and task; newer models narrowed it in some settings. [[9]](#reference-9)
+
+These experiments test how AI teams behave under specified roles and rules. They reveal possible failure mechanisms, but were not validated as predictions of human company behavior. That is a separate claim requiring comparisons with observed organizations. [[9]](#reference-9)
+
+That connects to the [multiagent systems article](/blog/state-of-multiagent-systems/): the organization around an agent can change the outcome. Simulation gives us a way to investigate which information flows, incentives, and decision rules matter. The studies here offer stronger evidence for testing AI teams than for forecasting what happens when a human organization changes.
+
+## What do the results tell us?
+
+The two directions meet when simulated people become part of an agent's test environment. At that point, a score depends on both the agent's ability and how the simulated people behave.
+
+*Lost in Simulation* isolates this effect by holding the agent model fixed and changing the model playing the user. On its retail tasks, the agent's measured success ranged from about 67% to 76%. A separate human study across the US, India, Kenya, and Nigeria found that simulated users misestimated success differently across task difficulty and user groups. These findings come from one domain and English-language interactions, but show that the user simulator is part of the measurement. [[10]](#reference-10)
+
+This is why I would separate three questions when reading a simulation result.
+
+### Does the environment behave correctly?
+
+A simulated tool needs to apply the changes it claims to make. Information that should persist must remain available later. The same customer, document, or task should mean the same thing across applications. When a simulator invents a convenient response or loses a state change, a failure attributed to the agent may actually be a failure of the test environment.
+
+Checks on the simulator itself are therefore part of the evidence. A convincing interface or conversation is helpful, but the relevant standard is whether the parts of the world that affect the task behave correctly.
+
+### Does the score measure the intended outcome?
+
+Opening the right page, issuing a valid command, and completing the requested work are different milestones. A good evaluation makes clear which one its score measures. It should also distinguish completion from compliance with the task's constraints: a correct final record does not by itself show that the agent used an allowed route to produce it.
+
+For simulated people, the equivalent question is which human behavior the metric captures. Matching an average survey response says little about whether the simulation reproduces disagreement or predicts a change in preference. Choose the measure around the claim being made.
+
+### Does the finding hold outside the simulation?
+
+The strongest check is a comparison with observations that were not used to construct or tune the simulator. The heatwave study and OpenAI's prospective deployment forecasts provide two different examples of this approach. Their comparisons are bounded, but they make the simulation's prediction checkable. [[5]](#reference-5) [[4]](#reference-4)
+
+<SimulationDiagram kind="validation" />
+
+Before using a result to make a decision, specify what must transfer: the direction of a change, the size of the effect, a ranking between systems, or an absolute failure rate. Each needs different evidence. A simulation can correctly identify the better option while remaining poor at estimating how often either option will fail.
+
+## Where simulation is useful today
+
+I would separate uses by the strength of the claim they require.
+
+**Regression testing** asks whether an agent still handles situations it previously handled. A repeatable environment with clear outcome checks can make that comparison useful, even when it covers only a small part of production. Its coverage should remain visible as the product changes.
+
+**Stress testing** asks whether a failure is possible under specified conditions. We can remove information, interrupt tools, change permissions, or introduce conflicting instructions. Discovering a failure gives us something concrete to fix and retest. It does not tell us how frequently that situation will arise among real users.
+
+**Exploration** uses simulated people or organizations to generate hypotheses. A run may suggest an unexpected disagreement, a communication bottleneck, or a response worth investigating with people. The result helps decide what to study next.
+
+**Forecasting** makes the stronger claim that the simulation can anticipate a real outcome. It needs validation on the kind of decision being made, comparison with simpler methods, and an account of uncertainty. Increasing the number of simulated participants cannot compensate for a mistaken model of their behavior.
+
+These uses can support one another. A failure discovered in production can become a regression test. A simulated organizational conflict can motivate a human study. Observations from that study can improve the next simulator. The value grows when these feedback loops stay connected.
+
+## What needs to improve
+
+There is substantial work underway, from controlled business environments to simulations grounded in human observations. The research is expanding what we can test before deployment and giving us better ways to study interactions that are difficult to inspect in a single benchmark question.
+
+The next step is stronger evidence about where the results hold. Workflow simulations need longer tasks, realistic interruptions, and checks on permissions and recovery. People simulations need to preserve variation between individuals and groups, with validation that goes beyond a plausible average. Organizational simulations need comparisons with observed organizational outcomes if they are to support forecasts about real companies.
+
+Independent evaluation matters across all three. Researchers and builders need access to reproducible environments, documented simulator versions, and validation data that can be shared responsibly. Reports should distinguish what was measured in the simulator from what was confirmed outside it.
+
+Simulation can help us find failures earlier, compare system designs, and investigate behavior at a scale that would otherwise be difficult. Its usefulness will grow with our ability to say which conclusions survive contact with the real world, and which still need to be tested there.
+
+## References
+
+1. <span id="reference-1"></span> [Zapier: AutomationBench](https://github.com/zapier/AutomationBench) (April 2026 paper; repository reviewed 30 September).
+2. <span id="reference-2"></span> [Malay et al.: EnterpriseOps-Gym](https://proceedings.mlr.press/v306/malay26a.html) (March 2026 preprint; ICML, July 2026).
+3. <span id="reference-3"></span> [Bhagtani et al.: ERPBench](https://arxiv.org/html/2609.17885) (15 September 2026; revised 23 September, preprint).
+4. <span id="reference-4"></span> [OpenAI: Predicting model behavior before release by simulating deployment](https://openai.com/index/deployment-simulation/) (16 June 2026; lab report).
+5. <span id="reference-5"></span> [Xia, Kuang, and Hu: Empirical Grounding Improves the Realism of LLM Agents Simulating Human Behavior During Disruptions](https://arxiv.org/pdf/2607.17437) (19 July 2026; preprint).
+6. <span id="reference-6"></span> [Chen, Zhu, and Zheng: When Synthetic Users Fail](https://arxiv.org/html/2607.26348) (28 July 2026; preprint).
+7. <span id="reference-7"></span> [Cummins: The Threat of Analytic Flexibility in Using Large Language Models to Simulate Human Data](https://journals.sagepub.com/doi/full/10.1177/25152459261461505) (30 July 2026; peer-reviewed study).
+8. <span id="reference-8"></span> [Gruenbaum et al.: The Era by Eon Benchmark](https://arxiv.org/html/2609.09853) (9 September 2026; preprint).
+9. <span id="reference-9"></span> [Shen et al.: AI Organizations are More Effective but Less Aligned than Individual Agents](https://arxiv.org/html/2604.10290v1) (11 April 2026; research paper).
+10. <span id="reference-10"></span> [Seshadri et al.: Lost in Simulation](https://arxiv.org/html/2601.17087) (23 January 2026; preprint).

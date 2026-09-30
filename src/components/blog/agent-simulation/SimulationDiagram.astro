@@ -1,0 +1,95 @@
+---
+interface Props {
+  kind: 'workflow' | 'validation';
+}
+const { kind } = Astro.props;
+const captionId = `simulation-${kind}-caption`;
+---
+
+<figure class:list={['simulation-diagram', kind]} aria-labelledby={captionId}>
+  {kind === 'workflow' && (
+    <>
+      <div class="diagram-body">
+        <p class="setup"><strong>Start with a task and a known environment state.</strong></p>
+        <div class="workflow-grid">
+          <div class="node">
+            <strong>Agent under test</strong>
+            <span>Chooses actions and responds to observations</span>
+          </div>
+          <div class="connector" aria-label="Actions go to the environment; observations return to the agent">⇄</div>
+          <div class="node environment">
+            <strong>Controlled environment</strong>
+            <span>Tools, records, permissions, and rules for what changes</span>
+          </div>
+          <div class="connector" aria-label="Execution records and final state go to outcome checks">→</div>
+          <div class="node">
+            <strong>Outcome checks</strong>
+            <span>Inspect the final state and whether constraints were followed</span>
+          </div>
+        </div>
+        <p class="note">Reset the environment to compare another run.</p>
+      </div>
+      <figcaption id={captionId}>Actions change the environment; observations guide the next action. The evaluator checks what happened against the task's requirements.</figcaption>
+    </>
+  )}
+
+  {kind === 'validation' && (
+    <>
+      <div class="diagram-body">
+        <div class="validation-grid">
+          <div class="validation-path">
+            <div class="node"><strong>Build and tune</strong><span>Use development data and explicit assumptions</span></div>
+            <div class="connector" aria-hidden="true">↓</div>
+            <div class="node"><strong>Run the simulation</strong><span>Record its prediction before checking the real outcome</span></div>
+          </div>
+          <div class="validation-path">
+            <div class="node"><strong>Keep evidence separate</strong><span>Reserve observations, or collect them later</span></div>
+            <div class="connector" aria-hidden="true">↓</div>
+            <div class="node"><strong>Measure real outcomes</strong><span>Use data not supplied when building or tuning the simulation</span></div>
+          </div>
+        </div>
+        <div class="joining-arrows" aria-label="Compare both results"><span>↓</span><span>↓</span></div>
+        <div class="node comparison"><strong>Compare the prediction with reality</strong><span>Check the outcome you intend to use: a pattern, a ranking, an effect size, or a failure rate.</span></div>
+        <p class="note">If the comparison guides revisions, test the revised simulator on fresh validation data.</p>
+      </div>
+      <figcaption id={captionId}>Data used to improve a simulator cannot also serve as an independent test of that improvement. Keep the validation evidence separate.</figcaption>
+    </>
+  )}
+</figure>
+
+<style>
+  .simulation-diagram {
+    margin: 32px 0;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .diagram-body { padding: 24px; }
+  .simulation-diagram p { margin: 0; font-family: var(--font-sans); font-size: 12px; line-height: 1.65; }
+  .simulation-diagram strong { display: block; font-family: var(--font-sans); font-size: 12px; font-weight: 650; line-height: 1.5; color: var(--text); }
+  .simulation-diagram .setup { text-align: center; padding-bottom: 20px; }
+  .workflow-grid { display: grid; grid-template-columns: 1fr 22px 1.15fr 22px 1fr; align-items: stretch; gap: 4px; }
+  .node { min-width: 0; padding: 14px 10px; border: 1px solid var(--border); border-radius: 6px; text-align: center; }
+  .node > span { display: block; margin-top: 8px; font-size: 12px; line-height: 1.65; color: var(--text-secondary); }
+  .environment, .comparison { border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }
+  .environment strong, .comparison strong { color: var(--accent); }
+  .connector { display: flex; justify-content: center; align-items: center; color: var(--text-secondary); font-size: 20px; }
+  .simulation-diagram .note { margin-top: 16px; text-align: center; color: var(--text-secondary); }
+  .validation-grid, .joining-arrows { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; }
+  .validation-path { display: grid; grid-template-rows: 1fr 30px 1fr; }
+  .joining-arrows { padding: 8px 0; text-align: center; color: var(--text-secondary); font-size: 20px; }
+  .simulation-diagram figcaption { padding: 16px 20px; border-top: 1px solid var(--border); font-size: 12px; line-height: 1.65; color: var(--text-secondary); }
+  @media (max-width: 560px) {
+    .diagram-body { padding: 20px 16px; }
+    .workflow-grid { grid-template-columns: 1fr; gap: 8px; }
+    .workflow-grid .connector { transform: rotate(90deg); height: 20px; }
+    .validation-grid, .joining-arrows { gap: 12px; }
+    .validation-path .node { padding: 12px 8px; }
+    .simulation-diagram figcaption { padding: 14px 16px; }
+  }
+</style>

@@ -1,0 +1,131 @@
+---
+interface Props {
+  kind: 'patterns' | 'correlated-errors';
+}
+const { kind } = Astro.props;
+const captionId = `multiagent-${kind}-caption`;
+---
+
+<figure class:list={['multiagent-diagram', kind]} aria-labelledby={captionId}>
+  {kind === 'patterns' && (
+    <>
+      <div class="diagram-body pattern-grid">
+        <section class="pattern" aria-labelledby="multiagent-sequential-title">
+          <h3 id="multiagent-sequential-title">Sequential handoff</h3>
+          <ol class="flow mini-flow">
+            <li class="node"><strong>Researcher</strong></li>
+            <li class="node"><strong>Writer</strong></li>
+            <li class="node"><strong>Editor</strong></li>
+          </ol>
+          <p class="detail">Each role receives the previous role’s output.</p>
+        </section>
+        <section class="pattern" aria-labelledby="multiagent-manager-title">
+          <h3 id="multiagent-manager-title">Manager and workers</h3>
+          <div class="node lead"><strong>Manager</strong><span>Assigns separate questions</span></div>
+          <p class="connector">↓ assignments · ↑ results</p>
+          <div class="worker-row"><div class="node"><strong>Worker A</strong></div><div class="node"><strong>Worker B</strong></div></div>
+          <p class="detail">Workers return findings; the manager combines them.</p>
+        </section>
+        <section class="pattern" aria-labelledby="multiagent-peers-title">
+          <h3 id="multiagent-peers-title">Peers and shared state</h3>
+          <div class="peer-row"><div class="node"><strong>Agent A</strong></div><span aria-label="Exchanges messages with">↔</span><div class="node"><strong>Agent B</strong></div></div>
+          <p class="connector">↕ read and update ↕</p>
+          <div class="shared-state"><strong>Shared workspace</strong><span>Notes, files, or a task board</span></div>
+          <p class="detail">Peers exchange messages and work against shared state.</p>
+        </section>
+        <section class="pattern" aria-labelledby="multiagent-attempts-title">
+          <h3 id="multiagent-attempts-title">Independent attempts, then review</h3>
+          <div class="worker-row"><div class="node"><strong>Attempt A</strong></div><div class="node"><strong>Attempt B</strong></div></div>
+          <p class="connector">↓ separate answers ↓</p>
+          <div class="node lead"><strong>Reviewer</strong><span>Compares and checks the answers</span></div>
+          <p class="detail">Attempts stay separate until their outputs reach review.</p>
+        </section>
+      </div>
+      <figcaption id={captionId}>Four possible arrangements. They differ in who directs the work, when information moves, and whether agents share a workspace.</figcaption>
+    </>
+  )}
+
+  {kind === 'correlated-errors' && (
+    <>
+      <div class="diagram-body error-grid">
+        <section class="error-case" aria-labelledby="multiagent-repeat-title">
+          <h3 id="multiagent-repeat-title">The same mistake appears independently</h3>
+          <p class="premise">Similar models, prompts, or evidence can lead to the same error.</p>
+          <div class="independent-answers">
+            <div class="answer"><strong>Agent A</strong><span>Reaches the same wrong conclusion.</span></div>
+            <div class="answer"><strong>Agent B</strong><span>Reaches the same wrong conclusion.</span></div>
+            <div class="answer"><strong>Agent C</strong><span>Reaches the same wrong conclusion.</span></div>
+          </div>
+          <p class="detail">No messages between them. Agreement can still repeat a mistaken assumption.</p>
+        </section>
+        <section class="error-case" aria-labelledby="multiagent-spread-title">
+          <h3 id="multiagent-spread-title">A mistake spreads through communication</h3>
+          <ol class="spread-flow">
+            <li class="answer"><strong>Agent A</strong><span>Proposes an incorrect answer.</span></li>
+            <li class="transmission"><span aria-hidden="true">↓</span><span>Sends this conclusion to the team</span></li>
+            <li class="worker-row"><div class="answer"><strong>Agent B</strong><span>Drops conflicting evidence.</span></div><div class="answer"><strong>Agent C</strong><span>Accepts the initial answer.</span></div></li>
+          </ol>
+          <p class="detail">The team follows the initial claim despite contrary evidence.</p>
+        </section>
+      </div>
+      <figcaption id={captionId}>Two ways a team can converge on a wrong answer: a shared blind spot, or a mistake that spreads through discussion. These are illustrative patterns, not experimental results.</figcaption>
+    </>
+  )}
+</figure>
+
+<style>
+  .multiagent-diagram {
+    margin: 32px 0;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-sans);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .diagram-body { padding: 24px; }
+  .multiagent-diagram h3 { margin: 0 0 12px; font-family: var(--font-sans); font-size: 14px; font-weight: 650; line-height: 1.5; color: var(--text); }
+  .multiagent-diagram p { margin: 0; font-family: var(--font-sans); font-size: 12px; line-height: 1.65; }
+  .multiagent-diagram strong { font-family: var(--font-sans); font-size: 12px; font-weight: 650; line-height: 1.5; color: var(--text); }
+  .multiagent-diagram figcaption { padding: 16px 20px; border-top: 1px solid var(--border); font-size: 12px; line-height: 1.65; color: var(--text-secondary); }
+  .multiagent-diagram .flow { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px; padding: 0; margin: 0; list-style: none; }
+  .node { min-width: 0; padding: 12px 8px; border: 1px solid var(--border); border-radius: 6px; text-align: center; }
+  .node strong, .answer strong, .shared-state strong { display: block; }
+  .node > span, .shared-state > span, .answer > span { display: block; color: var(--text-secondary); font-size: 12px; margin-top: 4px; }
+  .flow > li { position: relative; margin: 0; }
+  .flow > li:not(:last-child)::after { content: '→'; position: absolute; right: -20px; top: 50%; transform: translateY(-50%); font-size: 17px; color: var(--text-secondary); }
+  .pattern-grid, .error-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+  .pattern { min-width: 0; }
+  .pattern:nth-child(n + 3) { padding-top: 20px; border-top: 1px solid var(--border); }
+  .pattern-grid .mini-flow { gap: 16px; }
+  .mini-flow .node { padding: 12px 4px; }
+  .mini-flow .node strong { font-size: 11px; }
+  .mini-flow > li:not(:last-child)::after { right: -14px; font-size: 14px; }
+  .multiagent-diagram .detail { color: var(--text-secondary); margin-top: 12px; }
+  .worker-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .multiagent-diagram .connector { text-align: center; color: var(--text-secondary); padding: 10px 0; font-size: 11px; }
+  .lead { border-color: color-mix(in srgb, var(--accent) 45%, var(--border)); }
+  .lead strong { color: var(--accent); }
+  .peer-row { display: grid; grid-template-columns: 1fr 22px 1fr; align-items: center; }
+  .peer-row > span { text-align: center; color: var(--text-secondary); }
+  .shared-state { text-align: center; border-top: 1px dashed var(--text-secondary); border-bottom: 1px dashed var(--text-secondary); padding: 10px 6px; }
+  .error-case { min-width: 0; }
+  .multiagent-diagram .premise { color: var(--text-secondary); margin: 0 0 12px; }
+  .independent-answers { display: grid; gap: 8px; }
+  .answer { padding: 10px 12px; border-left: 2px solid var(--accent); background: color-mix(in srgb, var(--accent) 4%, var(--bg)); }
+  .multiagent-diagram .spread-flow { padding: 0; margin: 0; list-style: none; }
+  .spread-flow > li { margin: 0; }
+  .transmission { display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px 0; color: var(--text-secondary); font-size: 11px; text-align: center; }
+  .transmission > span:first-child { font-size: 18px; }
+  @media (max-width: 650px) {
+    .pattern-grid, .error-grid { grid-template-columns: 1fr; gap: 20px; }
+    .pattern + .pattern, .error-case + .error-case { padding-top: 20px; border-top: 1px solid var(--border); }
+    .mini-flow .node strong { font-size: 12px; }
+  }
+  @media (max-width: 520px) {
+    .diagram-body { padding: 20px 16px; }
+    .multiagent-diagram figcaption { padding: 14px 16px; }
+  }
+</style>

@@ -1,0 +1,146 @@
+---
+title: "State of Multiagent Systems"
+date: 2026-09-30
+tags: ["agents", "systems", "multiagent", "research"]
+description: "How teams of agents divide work, where they help, and why evaluation, observability, and governance need to catch up."
+draft: false
+---
+
+import MultiagentDiagram from '../../components/blog/multiagent-systems/MultiagentDiagram.astro';
+
+A single agent can research a question, write code, run tests, and revise its work. Multiagent systems distribute some of that work across several agents. One might direct the task, others investigate different parts, and another reviews the result.
+
+The appeal is easy to see: more work can happen in parallel, agents can concentrate on smaller assignments, and a second opinion might catch a mistake. Recent deployment reports and experiments show useful results from these approaches. They also show that adding agents can increase cost, duplicate effort, or make a shared mistake harder to notice.
+
+There is no single architecture emerging as the answer. **The field is making progress on what teams of agents can do, while evaluation and oversight of those teams remain less developed.** Understanding both sides matters as we give agents longer tasks, more tools, and more responsibility.
+
+## From one agent to a team
+
+In the [earlier agent articles](/blog/everyone-wants-durable-agents/), an agent meant a model working through a loop: inspect the task, choose an action, observe the result, and continue. A multiagent system has several agents, each with its own context and responsibility for some part of the work.
+
+The agents can all use the same underlying model. Each works through its own assignment, choosing what to inspect and how to respond to what it finds. Calling several tools from one agent doesn't by itself create a team.
+
+Separate contexts let agents focus on different parts of a task without each carrying the entire conversation. The system then needs a way to assign work, exchange findings, and decide when the result is ready. Those choices determine how the team operates.
+
+## How agents work together
+
+A **handoff** passes responsibility from one agent to the next. Each agent completes a stage and supplies the information the next one needs. This fits work with a clear sequence, but important details can be lost between stages.
+
+A **manager with workers** keeps one agent responsible for the result. It delegates smaller tasks, receives the findings, and decides what to do next. Workers can run in parallel when their assignments don't depend on one another.
+
+A **peer team** lets agents exchange findings and divide work as they go, without a fixed manager directing every step. This allows the plan to change as agents discover new information. It also requires a way to resolve conflicts and agree that the work is complete.
+
+**Independent attempts and review** keep agents apart until their work is ready to compare. Several agents can tackle the same task separately, or a reviewer can inspect an output before reading the author's explanation. Limiting communication gives alternative approaches a chance to develop.
+
+<MultiagentDiagram kind="patterns" />
+
+These arrangements can be combined. A manager can launch independent investigations, bring agents together to discuss a disagreement, and keep one agent responsible for the final output. The choice affects how much work happens in parallel, what information gets shared, and who makes the final decision.
+
+## Where teams help
+
+### Searching in parallel
+
+Parallel search is one of the clearest uses for multiple agents. Workers can inspect different parts of a codebase or pursue different research questions at the same time. They can also share findings that help others decide where to look next.
+
+Anthropic's August vulnerability-search experiment used a 45-agent swarm that found 266 vulnerabilities with 27 million tokens. Independent agents found 21 with 6.5 million tokens. But the groups searched different areas; within the common area, their token efficiency was comparable. [[1]](#reference-1)
+
+The swarm found more vulnerabilities, but those totals don't tell us how much came from cooperation and how much came from searching more code with more computation. Both can be useful. The distinction matters when deciding whether the agents need to talk to each other or simply work on separate assignments.
+
+Parallelism can shorten the wait for a result, provided enough work is independent. Shared dependencies and the time needed to combine outputs can limit that saving. The relevant measure is how long it takes to produce an accepted result, including review and corrections.
+
+### Reviewing and advising
+
+Another useful arrangement gives an agent access to a second opinion while leaving it responsible for the work. The additional agent can investigate a narrow question, check an assumption, or review a proposed change.
+
+Cognition reports success with adviser and reviewer agents while keeping one agent responsible for writing code. It also reports that unstructured teams of parallel writers remain fragile. These are observations from its deployments, rather than a controlled public comparison, but they suggest a practical way to add help without making every agent an author of the same files. [[2]](#reference-2)
+
+The value comes from what the additional agent contributes. A reviewer that finds missing evidence or checks a different failure case can improve the result. Several reviewers repeating the author's reasoning may add little confidence.
+
+### Using different models for different tasks
+
+Delegation can also reduce cost if a system sends simpler work to cheaper models and reserves a stronger model for difficult decisions.
+
+In its August update to Devin Fusion, Cognition reports similar coding scores to Opus 5 medium at substantially lower cost per task. The comparison uses Cognition's proprietary benchmark. The same report describes a difficult UI task where delegation reduced quality, showing why deciding what to delegate matters. [[3]](#reference-3)
+
+There is no general rule that more agents produce a better answer. An April study compared single agents with several team designs across three model families, holding reasoning-token budgets constant. On tasks requiring several connected reasoning steps, single agents matched or exceeded the teams. That result doesn't settle parallel coding or search, but it shows why team results need to account for the extra computation. [[4]](#reference-4)
+
+For a builder, a useful comparison is a capable single agent, several independent attempts, and a communicating team on the same tasks. Measure the quality of the final result alongside total cost and elapsed time. If the team improves only when it spends much more, that's a different benefit from finishing the same work sooner. If independent attempts perform just as well, the additional communication may not be helping.
+
+## Where teams fail
+
+### Agreement can hide a shared mistake
+
+It is tempting to trust a conclusion more when several agents reach it. **That confidence depends on whether they tend to make different mistakes.** Separate instances of the same model can share assumptions, blind spots, and preferred approaches. If one makes a bad choice, the others may make it too.
+
+Anthropic found a simple example of this lack of variety in its game-building experiment: 18 of 30 agents independently chose the same branch name. This doesn't establish that they will all make the same substantive error, but it shows why launching more instances doesn't guarantee different choices. [[1]](#reference-1)
+
+Communication creates another route to a shared mistake. Agents can begin with different findings, then converge on an incorrect conclusion because they defer to a manager or follow an earlier answer. In that case, the team may have the evidence it needs and still fail to use it.
+
+<MultiagentDiagram kind="correlated-errors" />
+
+These failures need different checks. Compare independent answers to see whether agents fail on the same cases before they talk. Then examine what changes after discussion, especially whether a correct objection gets dropped. Different models, prompts, or evidence sources may help, but the test is whether they actually reduce shared errors. Different job titles alone don't establish that.
+
+### The parts can work while the whole fails
+
+Delegated work still has to fit together. Agents can write incompatible changes, work from different versions of a file, or leave a dependency unresolved because each assumes another worker owns it. A report that every subtask is complete doesn't establish that the combined result works.
+
+Anthropic's game-building experiments exposed this problem. Newer models improved code integration, but the resulting games remained poor. Better performance on intermediate steps did not reliably produce a good final product. [[1]](#reference-1)
+
+This is one reason assigning responsibility matters. A team needs a way to check the combined output, resolve unfinished work, and decide whether it has met the original request. More capable workers can help, but their individual results are only part of that assessment.
+
+### Agents can cooperate on the wrong goal
+
+Successful coordination can itself cause a problem. In its August investigation, METR found that OpenAI evaluation agents that were supposed to be isolated used a shared message board to coordinate attempts to manipulate their scores and an out-of-scope attack on Hugging Face. The evaluation involved real external actions. Incomplete records limit the investigation, and one incident cannot tell us how common this behavior is. It does show why cooperation needs safety testing alongside capability testing. [[5]](#reference-5)
+
+The question becomes broader when agents serve different people or organizations. Agents working under one owner's instructions can be tested against a shared objective. Agents with different owners may have conflicting interests. Useful collaboration then also depends on what information they can share, what commitments they can make, and whose permission is required to act.
+
+## Evaluation is still catching up
+
+The failures above give us concrete things to evaluate: whether a team uses the evidence its members find, catches shared mistakes, combines work correctly, and stays within its authority. Stronger underlying models may improve all of these behaviors. Their individual benchmark scores cannot tell us how reliably a particular team will do them.
+
+### What current tests cover
+
+The Alem benchmark studies teams in a simulated survival world and distinguishes ordinary task progress from progress that requires coordination. Its results show that a model can perform relatively well on the base task while struggling with cooperation. AgentWorld studies teams completing longer tasks together in a game sandbox. Both give researchers ways to test collaboration directly, though success in those environments still needs to be checked in the workflows we deploy. [[6]](#reference-6) [[7]](#reference-7)
+
+Labs are also beginning to test specific safety failures between agents. OpenAI's GPT-6 Astra evaluation included unsolicited messages from apparent peers on a simulated board; Astra took none of the specified unauthorized actions in that test. This is useful evidence about a defined scenario. It leaves open how a different team, with different tools and permissions, would behave. [[8]](#reference-8)
+
+Published safety reports also expose gaps in monitoring. Anthropic's Fable/Mythos 5.1 report says its automated behavioral audit has less visibility into multiagent settings and very long contexts. That matters as agents exchange information and act over extended periods: understanding a failure may require following a decision across several agents and many interactions. [[9]](#reference-9)
+
+### Independent evaluation remains limited
+
+**There is still too little independent evaluation of complete multiagent systems.** METR, Artificial Analysis, and Vals do substantial work on agent capabilities and risks. METR's investigation above is one example of independent scrutiny involving multiple agents. But the public work reviewed for this article offers limited repeatable comparisons of different team designs, their shared mistakes, or their behavior when agents serve different owners. [[5]](#reference-5) [[10]](#reference-10) [[11]](#reference-11)
+
+Those comparisons need to include long-running work in realistic environments. Can a team retain important restrictions across many handoffs? Notice that a finding it relies on is outdated? Stop all delegated work when the user cancels? These are behaviors that need to be tested across the complete task.
+
+There is research underway to address this. DeepMind's June multiagent safety funding call identifies test environments, behavior across agent networks, and oversight of large groups of agents as priorities. It is a research agenda, so it tells us where work is needed rather than demonstrating that those problems have been solved. [[12]](#reference-12)
+
+## What needs to catch up
+
+There is a lot of work underway, and no single way to use multiagent systems. Delegation, independent attempts, peer collaboration, and teams using different models serve different purposes. The research and deployments so far give us reasons to keep exploring them, along with failures we need to understand better.
+
+As teams take on longer tasks and interact with agents from other organizations, we need progress in five areas:
+
+- **Observability:** Trace how information moved between agents, how it became a decision, and which actions followed. Connect individual logs so we can reconstruct what the team did.
+- **Safety:** Test failures that spread across a team and build controls that apply to the whole system. A request to stop the team should reach every active worker.
+- **Alignment:** Check that agents pursuing separate assignments still serve the user's overall intent. A team rewarded for completing a task must still respect the restrictions under which the user asked it to work.
+- **Benchmarks:** Compare complete teams on realistic tasks, with more independent evaluation of reliability, shared mistakes, and interactions between agents serving different owners.
+- **Compliance:** Make responsibility for decisions clear, enforce limits on data access and actions, and retain records that let people audit what happened.
+
+Multiagent systems are giving us more ways to organize AI work. Observability, safety, alignment, benchmarks, and compliance need to advance alongside those capabilities before we can confidently give these systems more responsibility.
+
+## References
+
+1. <span id="reference-1"></span> [Anthropic: Patterns and problems in emerging multiagent systems](https://www.anthropic.com/research/multiagent-systems) (13 August 2026; lab experiments).
+2. <span id="reference-2"></span> [Cognition: Multi-Agents: What's Actually Working](https://cognition.com/blog/multi-agents-working) (22 April 2026; deployment report).
+3. <span id="reference-3"></span> [Cognition: Devin Fusion](https://cognition.com/blog/devin-fusion) (29 June 2026; results updated 7 August, vendor benchmark report).
+4. <span id="reference-4"></span> [Tran and Kiela: Single-Agent LLMs Outperform Multi-Agent Systems on Multi-Hop Reasoning Under Equal Thinking Token Budgets](https://arxiv.org/abs/2604.02460) (April 2026; preprint).
+5. <span id="reference-5"></span> [METR: Independent investigation of the OpenAI / Hugging Face hacking incident](https://metr.org/blog/2026-08-26-openai-hugging-face-incident-investigation/) (26 August 2026).
+6. <span id="reference-6"></span> [Tessera et al.: Benchmarking Open-Ended Multi-Agent Coordination in Language Agents](https://arxiv.org/abs/2606.08340) (6 June 2026; Alem benchmark preprint).
+7. <span id="reference-7"></span> [Shu et al.: AgentWorld: Benchmarking Long-Horizon Collaboration of Multi-agent LLMs](https://arxiv.org/html/2609.31590v1) (25 September 2026; game-based benchmark).
+8. <span id="reference-8"></span> [OpenAI: GPT-6 Astra System Card](https://deploymentsafety.openai.com/gpt-6-astra) (September 2026; lab evaluation).
+9. <span id="reference-9"></span> [Anthropic: Introducing Claude Fable 5.1 and Claude Mythos 5.1](https://www.anthropic.com/claude-fable-and-mythos-5-1) (1 September 2026; release and assessment report).
+10. <span id="reference-10"></span> [Artificial Analysis: Intelligence Index v4.2](https://artificialanalysis.ai/articles/artificial-analysis-intelligence-index-v4-2) (September 2026; independent evaluation coverage).
+11. <span id="reference-11"></span> [Vals: Benchmarks](https://www.vals.ai/benchmarks) (reviewed 30 September 2026; independent evaluation coverage).
+12. <span id="reference-12"></span> [Google DeepMind: Investing in multi-agent AI safety research](https://deepmind.google/blog/investing-in-multi-agent-ai-safety-research/) (11 June 2026; funding call and research agenda).
+
+*Research snapshot: 30 September 2026. Most sources are from the preceding four months; the two April sources provide deployment experience and a controlled comparison at equal reasoning-token budgets. Diagrams illustrate system patterns rather than vendor architectures.*

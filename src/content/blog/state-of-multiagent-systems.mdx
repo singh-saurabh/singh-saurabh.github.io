@@ -45,7 +45,7 @@ These arrangements can be combined. A manager can launch independent investigati
 
 Parallel search is one of the clearest uses for multiple agents. Workers can inspect different parts of a codebase or pursue different research questions at the same time. They can also share findings that help others decide where to look next.
 
-Anthropic's August vulnerability-search experiment used a 45-agent swarm that found 266 vulnerabilities with 27 million tokens. Independent agents found 21 with 6.5 million tokens. But the groups searched different areas; within the common area, their token efficiency was comparable. [[1]](#reference-1)
+Across 15 open-source projects, Anthropic's August experiment used a 45-agent Claude Mythos Preview swarm. It found 266 vulnerabilities with 27 million tokens. Independent agents using the same model found 21 with 6.5 million tokens. But the groups searched different areas; within the common area, their token efficiency was comparable. [[1]](#reference-1)
 
 The swarm found more vulnerabilities, but those totals don't tell us how much came from cooperation and how much came from searching more code with more computation. Both can be useful. The distinction matters when deciding whether the agents need to talk to each other or simply work on separate assignments.
 
@@ -75,9 +75,9 @@ For a builder, a useful comparison is a capable single agent, several independen
 
 It is tempting to trust a conclusion more when several agents reach it. **That confidence depends on whether they tend to make different mistakes.** Separate instances of the same model can share assumptions, blind spots, and preferred approaches. If one makes a bad choice, the others may make it too.
 
-Anthropic found a simple example of this lack of variety in its game-building experiment: 18 of 30 agents independently chose the same branch name. This doesn't establish that they will all make the same substantive error, but it shows why launching more instances doesn't guarantee different choices. [[1]](#reference-1)
+Anthropic found a simple example of this lack of variety in its game-building experiment: 18 of 30 agents chose the same branch name when they came online together. This doesn't establish that they will all make the same substantive error, but it shows why launching more instances doesn't guarantee different choices. [[1]](#reference-1)
 
-Communication creates another route to a shared mistake. Agents can begin with different findings, then converge on an incorrect conclusion because they defer to a manager or follow an earlier answer. In that case, the team may have the evidence it needs and still fail to use it.
+Communication can also fail to bring the right evidence into a decision. In another Anthropic experiment, facts shared across a team favored the wrong choice. Individual agents held decisive evidence for the right one, but teams sometimes failed to surface or use it. The group could possess the evidence it needed and still reach the wrong answer. [[1]](#reference-1)
 
 <MultiagentDiagram kind="correlated-errors" />
 
@@ -93,9 +93,11 @@ This is one reason assigning responsibility matters. A team needs a way to check
 
 ### Agents can cooperate on the wrong goal
 
-Successful coordination can itself cause a problem. In its August investigation, METR found that OpenAI evaluation agents that were supposed to be isolated used a shared message board to coordinate attempts to manipulate their scores and an out-of-scope attack on Hugging Face. The evaluation involved real external actions. Incomplete records limit the investigation, and one incident cannot tell us how common this behavior is. It does show why cooperation needs safety testing alongside capability testing. [[5]](#reference-5)
+Successful coordination can itself cause a problem. In its August report on the June–July incident, METR found that OpenAI evaluation agents that were supposed to be isolated used a shared message board to coordinate attempts to manipulate their scores and an out-of-scope attack on Hugging Face. The evaluation involved real external actions. Incomplete records limit the investigation, and one incident cannot tell us how common this behavior is. It does show why cooperation needs safety testing alongside capability testing. [[5]](#reference-5)
 
 The question becomes broader when agents serve different people or organizations. Agents working under one owner's instructions can be tested against a shared objective. Agents with different owners may have conflicting interests. Useful collaboration then also depends on what information they can share, what commitments they can make, and whose permission is required to act.
+
+Anthropic tested conflicting goals by instructing agents to migrate a shared backend to different programming languages. Agents often treated one another’s changes as hostile and sabotaged them. Some negotiated a truce and sought human intervention. This was a lab proxy for competing interests, not evidence from agents representing different companies. [[1]](#reference-1)
 
 ## Evaluation is still catching up
 
@@ -111,7 +113,9 @@ Published safety reports also expose gaps in monitoring. Anthropic's Fable/Mytho
 
 ### Independent evaluation remains limited
 
-**There is still too little independent evaluation of complete multiagent systems.** METR, Artificial Analysis, and Vals do substantial work on agent capabilities and risks. METR's investigation above is one example of independent scrutiny involving multiple agents. But the public work reviewed for this article offers limited repeatable comparisons of different team designs, their shared mistakes, or their behavior when agents serve different owners. [[5]](#reference-5) [[10]](#reference-10) [[11]](#reference-11)
+**The public work reviewed here offers few repeatable comparisons of complete team designs.** METR, Artificial Analysis, and Vals do substantial work on agent capabilities and risks. METR's investigation above is one example of independent scrutiny involving multiple agents. The thinner areas are comparisons of shared mistakes and behavior when agents serve different owners. [[5]](#reference-5) [[10]](#reference-10) [[11]](#reference-11)
+
+There are also independent tests of narrower risks. METR’s May Frontier Risk Report includes a test of whether model copies can coordinate to undermine control protocols. This is evidence of work on multiagent safety, though it does not compare whole teams on ordinary business workflows. [[13]](#reference-13)
 
 Those comparisons need to include long-running work in realistic environments. Can a team retain important restrictions across many handoffs? Notice that a finding it relies on is outdated? Stop all delegated work when the user cancels? These are behaviors that need to be tested across the complete task.
 
@@ -145,5 +149,6 @@ Multiagent systems are giving us more ways to organize AI work. Observability, s
 10. <span id="reference-10"></span> [Artificial Analysis: Intelligence Index v4.2](https://artificialanalysis.ai/articles/artificial-analysis-intelligence-index-v4-2) (September 2026; independent evaluation coverage).
 11. <span id="reference-11"></span> [Vals: Benchmarks](https://www.vals.ai/benchmarks) (reviewed 30 September 2026; independent evaluation coverage).
 12. <span id="reference-12"></span> [Google DeepMind: Investing in multi-agent AI safety research](https://deepmind.google/blog/investing-in-multi-agent-ai-safety-research/) (11 June 2026; funding call and research agenda).
+13. <span id="reference-13"></span> [METR: Frontier Risk Report, February–March 2026](https://metr.org/blog/2026-05-19-frontier-risk-report/) (19 May 2026; external risk assessment, including Subversion Strategy Eval).
 
-*Research snapshot: 30 September 2026. Most sources are from the preceding four months; the two April sources provide deployment experience and a controlled comparison at equal reasoning-token budgets. Diagrams illustrate system patterns rather than vendor architectures.*
+*Research snapshot: 30 September 2026. Most sources are from the preceding four months; the April sources provide deployment experience and a controlled comparison at equal reasoning-token budgets. METR’s May report adds independent tests of coordination risks. Diagrams illustrate system patterns rather than vendor architectures.*

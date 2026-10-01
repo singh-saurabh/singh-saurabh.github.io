@@ -49,7 +49,7 @@ Being separate from a lab does not mean having no ties to it. An evaluator may s
 | Organization | What it measures and how it works with labs |
 | --- | --- |
 | **Artificial Analysis (AA)** | **Measures:** Broad model and agent capability, workflow completion and consistency, alongside price, speed, and serving performance. <br /><br /> **Lab relationships:** A commercial benchmarking company with lab clients and pre-release evaluation work. AA says commercial relationships do not influence benchmark results. [[12]](#reference-12) |
-| **Vals AI** | **Measures:** Professional work in fields such as finance, law, healthcare, and coding, using private test sets for its own benchmarks. Its newer work also covers evaluation cheating, cyber risk, AI research capability, and youth safety. <br /><br /> **Lab relationships:** A venture-backed company that licenses private test data and builds benchmarks with domain experts. Its results appear in lab model cards. The cited disclosures do not say which labs, if any, pay for evaluations. [[13]](#reference-13) |
+| **Vals AI** | **Measures:** Professional work in fields such as finance, law, healthcare, and coding, using private test sets for its own benchmarks. Its newer work also covers evaluation cheating, cyber risk, AI research capability, and youth safety. <br /><br /> **Lab relationships:** A venture-backed company that licenses private validation data and builds benchmarks with domain experts. The test sets used for its published proprietary scores remain private. Its results appear in lab model cards. The cited disclosures do not say which labs, if any, pay for evaluations. [[13]](#reference-13) |
 | **Arena** | **Measures:** Human preferences between model responses. Its Agent Arena also measures task feedback, response to corrections, and tool-use failures in real user sessions. The agent ranking uses a different method from its paired-vote leaderboards. <br /><br /> **Lab relationships:** A commercial evaluation platform that sells services to model labs and enterprises. Providers can test unreleased variants under aliases. Public ranking under the official name requires meeting both the provider's release criteria and Arena's policy. [[14]](#reference-14) |
 | **ARC Prize Foundation** | **Measures:** Reasoning and adaptation to unfamiliar tasks. ARC-AGI-3 tests how agents explore interactive environments and learn their rules. It compares their efficiency with humans. This is a narrower question than performance across workplace tasks. <br /><br /> **Lab relationships:** A nonprofit funded partly by AI labs. Its policy gives sponsors no special access to private tests or control over results and publication. An academic panel reviews its methods and policy, though not every result. [[15]](#reference-15) |
 | **METR** | **Measures:** Autonomous task capability, task time horizons, AI research capability, and whether monitors can catch unwanted actions. Its risk assessments ask what these abilities imply for human control. <br /><br /> **Lab relationships:** A research nonprofit conducting pre-release assessments with labs. It says it declines funding from frontier AI companies and their staff. It does receive substantial free tokens for evaluations. Publication conditions must still be checked for each assessment. [[16]](#reference-16) [[5]](#reference-5) |
@@ -121,6 +121,8 @@ The three measures answer different questions:
 />
 
 A high pass@5 score helps if the system can identify the correct attempt. Otherwise, someone still has to check the answers. Success on all five attempts is stronger evidence of consistency. It still applies only to the tested cases; changed documents or instructions may produce different results.
+
+Cost also matters. AA reports cost per attempt alongside reliability, and similarly scoring models can differ substantially in price. Those costs do not tell us the full cost of useful work: checking answers, retries, and human corrections still need to be counted. [[2]](#reference-2)
 
 ### Taking on longer tasks
 
@@ -223,7 +225,7 @@ A test designed to provoke failure can show what is possible. To estimate how of
 
 ### Checking predictions against use
 
-OpenAI's deployment simulation uses past interactions to test how a new model might respond. It predicts rates of unwanted behavior, then compares them with observations after release. The median prediction error was a factor of 1.5. Some errors were much larger. Only the GPT-5.4 predictions were recorded before release; the other comparisons were made afterward. [[8]](#reference-8)
+OpenAI's deployment simulation uses past interactions to test how a new model might respond. It predicts rates of unwanted behavior, then compares them with observations after release. The median prediction error was a factor of 1.5. Some errors were much larger. Only the GPT-5.4 Thinking predictions were registered before release; the other comparisons were made afterward. [[8]](#reference-8)
 
 <SourceFigure
   id="deployment-predictions"
@@ -233,7 +235,7 @@ OpenAI's deployment simulation uses past interactions to test how a new model mi
   alt="OpenAI’s Figure 2 comparing deployment-simulation frequency predictions with observed rates of undesirable behavior across model deployments."
   source="https://openai.com/index/deployment-simulation/"
   publisher="OpenAI, June 2026, Figure 2"
-  caption="Original prediction-versus-observation figure. GPT-5.4 predictions were registered in advance; the other comparisons were retrospective."
+  caption="Original prediction-versus-observation figure. GPT-5.4 Thinking predictions were registered in advance; the other comparisons were retrospective."
 />
 
 The main method samples one assistant response at a time. The selected interactions may miss rare behavior. Past usage may also miss new ways people use a product. [[8]](#reference-8) As the [simulation article](/blog/state-of-agent-simulation/) discusses, simulations still need to be checked against actual use.
@@ -254,7 +256,7 @@ Models with longer measured task horizons tended to do better in both roles. As 
   alt="METR heatmap showing the percentage of runs where an agent completed a hidden side task without the monitor flagging it, for different agent and monitor models."
   source="https://metr.org/blog/2026-01-19-early-work-on-monitorability-evaluations/"
   publisher="METR, January 2026"
-  caption="Percentage of all runs in which the side task succeeded and the monitor did not flag it. Agents were instructed to perform the side task; monitors could not see their reasoning."
+  caption="Percentage of all runs in which the side task succeeded and the monitor did not flag it. Agents were instructed to perform the side task; monitors could not see their reasoning. Thresholds were calibrated to flag 5% of runs that had only the main task."
 />
 
 The chart counts runs where the side task succeeded and the monitor missed it. A low score could mean the monitor worked, or that the agent failed at the side task. It cannot tell us how often an agent would choose a hidden goal on its own.
@@ -291,11 +293,15 @@ Anthropic's September Fable/Mythos 5.1 report notes a gap in its automated behav
 
 DeepMind's June funding call also identifies multiagent safety as a research priority. It seeks repeatable test environments, studies of agent networks, and better oversight. That shows interest in the problem; the proposed methods still need to be tested. [[11]](#reference-11)
 
+METR already tests a narrower coordination risk. Its May report includes a test of whether model copies can coordinate to undermine control protocols. It probes a specific failure mode rather than comparing complete workplace teams. [[3]](#reference-3)
+
 **We need more independent tests of persistent agents and complete teams.** The public evidence reviewed here does not yet show how different team designs compare when permissions change or agents serve different owners. Repeatable comparisons would help guide deployment. Labs may have additional internal evidence.
 
 ## From evaluation to deployment
 
 Evaluations help decide whether to release a system and what access to give it. Those decisions also depend on what its mistakes could affect, whether we can catch them, and whether we can undo the damage.
+
+There are efforts to broaden oversight. METR’s May pilot examined internal AI use at Anthropic, Google, Meta, and OpenAI, with access to non-public models and information. It was designed for periodic assessment rather than only checking final releases. Participants could redact or anonymize material before inclusion, but could not approve the final industry report. [[3]](#reference-3)
 
 External evaluators can challenge a lab's assumptions. Their access and publication rights determine how much scrutiny they can provide. METR's GPT-5.6 Sol assessment required approval from OpenAI's communications and legal teams. METR understood this as a confidentiality review and said it changed neither its conclusions nor its tone. [[5]](#reference-5)
 

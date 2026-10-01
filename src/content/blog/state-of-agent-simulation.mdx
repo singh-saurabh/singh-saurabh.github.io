@@ -39,7 +39,7 @@ Simulation doesn't require every component to be artificial. A test can run real
 
 ERPBench takes this approach with a self-hosted ERPNext installation. Agents operate through screenshots and mouse and keyboard actions, while the evaluator checks database fields afterward. The September study uses 30 tasks, each run five times per agent. [[3]](#reference-3)
 
-Its results show why the final check matters. In the six tasks involving chains of documents, UI-TARS reached the save step in 80% of runs but completed none successfully. Claude Sonnet 4.6, meanwhile, achieved high success across the selected task groups. The study reveals differences between agents and between visible progress and a correct result. [[3]](#reference-3)
+Its results show why the final check matters. In the six tasks involving chains of documents, UI-TARS-1.5-7B reached the save step in 80% of runs but completed none successfully. Claude Sonnet 4.6, meanwhile, achieved high success across the selected task groups. The study reveals differences between agents and between visible progress and a correct result. [[3]](#reference-3)
 
 That evidence has a specific scope. The tasks cover one application, access is through screenshots, and evaluation replaces the human approval step with an automatic approver. It measures performance under those conditions, rather than the reliability of an entire business deployment. [[3]](#reference-3)
 
@@ -47,11 +47,11 @@ That evidence has a specific scope. The tasks cover one application, access is t
 
 Handwritten tasks give researchers control over what they test. Historical interactions provide another starting point: the situations users actually brought to a system.
 
-OpenAI's deployment simulation takes recent conversation histories and generates a replacement response using a candidate model. Researchers then compare forecasts of unwanted behavior with observations after release. The GPT-5.4 study registered its predictions in advance; other model comparisons were retrospective. [[4]](#reference-4)
+OpenAI's deployment simulation takes recent conversation histories and generates a replacement response using a candidate model. Researchers then compare forecasts of unwanted behavior with observations after release. The GPT-5.4 Thinking study registered its predictions in advance; other model comparisons were retrospective. [[4]](#reference-4)
 
 For coding agents, another model simulates tool responses using repository context and recorded tool behavior. Candidate actions can then be tested without running them against live systems. [[4]](#reference-4)
 
-The forecasts estimated behavior rates more accurately than tests built from challenging prompts. But the main method simulates a single assistant response, and rare failures may never appear in the sampled traffic. Historical usage also cannot fully anticipate how people will use a substantially different product. [[4]](#reference-4)
+OpenAI reports more accurate rate estimates than its challenging-prompt baselines. Its highlighted comparison covers behavior categories whose frequency changed substantially across GPT-5-series Thinking releases. But the main method simulates a single assistant response, and rare failures may never appear in the sampled traffic. Historical usage also cannot fully anticipate how people will use a substantially different product. [[4]](#reference-4)
 
 ## Simulating people
 
@@ -83,7 +83,9 @@ An organization adds relationships and constraints to the people inside it. Who 
 
 It also helps to distinguish a company's records from its behavior. Era by Eon generates a fictional enterprise with connected records across applications such as Salesforce, Zendesk, and Gong. Shared entities keep the data consistent, and generated answer keys make factual questions checkable. Its reported model comparison covers 33 questions on one generated company. This creates an environment for testing work over business data; it does not validate a model of how that company's employees would behave. [[8]](#reference-8)
 
-Anthropic's *AI Organizations* research studies the behavioral side. It constructs role-based consulting and software teams, then compares them with individual agents on 12 tasks involving tensions between business objectives and ethical behavior. Some team configurations improved business scores while worsening ethical scores. The size of that tradeoff depended on the model and task; newer models narrowed it in some settings. [[9]](#reference-9)
+Anthropic's *AI Organizations* research studies the behavioral side. It constructs role-based consulting and software teams, then compares them with individual agents on 12 tasks involving tensions between business objectives and ethical behavior. Some team configurations improved business scores while worsening ethical scores. [[9]](#reference-9)
+
+Consulting proposals received model-judged scores using business and ethics rubrics. Software tasks used computed outcomes, such as misinformation recommendations or missed sepsis cases. Comparing Opus 4.5 with Opus 4.1 narrowed the tradeoff in some settings, but did not remove it everywhere. [[9]](#reference-9)
 
 These experiments test how AI teams behave under specified roles and rules. They reveal possible failure mechanisms, but were not validated as predictions of human company behavior. That is a separate claim requiring comparisons with observed organizations. [[9]](#reference-9)
 
@@ -93,7 +95,7 @@ That connects to the [multiagent systems article](/blog/state-of-multiagent-syst
 
 The two directions meet when simulated people become part of an agent's test environment. At that point, a score depends on both the agent's ability and how the simulated people behave.
 
-*Lost in Simulation* isolates this effect by holding the agent model fixed and changing the model playing the user. On its retail tasks, the agent's measured success ranged from about 67% to 76%. A separate human study across the US, India, Kenya, and Nigeria found that simulated users misestimated success differently across task difficulty and user groups. These findings come from one domain and English-language interactions, but show that the user simulator is part of the measurement. [[10]](#reference-10)
+*Lost in Simulation* isolates this effect by holding the agent model fixed and changing the model playing the user. With GPT-4o as the agent, mean success across 115 retail tasks ranged from about 67% to 76% over three runs. A separate human study used 18 selected tasks across the US, India, Kenya, and Nigeria. It found that simulated users misestimated success differently across task difficulty and user groups. These findings come from one domain and English-language interactions, but show that the user simulator is part of the measurement. [[10]](#reference-10)
 
 This is why I would separate three questions when reading a simulation result.
 
@@ -152,4 +154,4 @@ Simulation can help us find failures earlier, compare system designs, and invest
 7. <span id="reference-7"></span> [Cummins: The Threat of Analytic Flexibility in Using Large Language Models to Simulate Human Data](https://journals.sagepub.com/doi/full/10.1177/25152459261461505) (30 July 2026; peer-reviewed study).
 8. <span id="reference-8"></span> [Gruenbaum et al.: The Era by Eon Benchmark](https://arxiv.org/html/2609.09853) (9 September 2026; preprint).
 9. <span id="reference-9"></span> [Shen et al.: AI Organizations are More Effective but Less Aligned than Individual Agents](https://arxiv.org/html/2604.10290v1) (11 April 2026; research paper).
-10. <span id="reference-10"></span> [Seshadri et al.: Lost in Simulation](https://arxiv.org/html/2601.17087) (23 January 2026; preprint).
+10. <span id="reference-10"></span> [Seshadri et al.: Lost in Simulation](https://arxiv.org/html/2601.17087v2) (23 January 2026; revised 28 January, v2; preprint).
